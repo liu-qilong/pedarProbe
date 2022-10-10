@@ -5,9 +5,7 @@ from scipy import interpolate
 
 
 class ViconData(object):
-
     def __init__(self, path):
-
         self.path = path
         col_names = [n for n in range(500)]
         self.doc = pd.read_csv(path, header=None, names=col_names, low_memory=False)
@@ -17,7 +15,6 @@ class ViconData(object):
         self.model_outputs = self.analyse_param('Model Outputs')
 
     def analyse_event(self):
-
         events_index = self.doc[self.doc[2] == 'Foot Strike'] \
             .index.tolist()
 
