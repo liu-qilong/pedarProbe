@@ -2,6 +2,8 @@ import re
 import sys
 import pandas as pd
 
+import node
+
 class Pedar_asc(object):
     def __init__(self, path, skiprows=9, header=9, index_col=0):
         names = [idx for idx in range(199)]
@@ -31,46 +33,6 @@ class Pedar_asc(object):
         return self.doc.loc[start_time:end_time, self.id_map(foot, start_sensor_id):self.id_map(foot, end_sensor_id)]
 
 
-class Pedar_Subject(object):
-    def __init__(self, name, folder):
-        self.name = name
-        self.folder = folder
-        self.trails = {}
-
-    def add_trail(self, asc, condition, time, foot, stances):
-        # the same trail's information in the same condition and time is seperated in different entries
-        # each one contains one foot type with stances timestamp
-        # therefore firstly construct the self.trails[condition][time] dictionary construction
-        if condition not in self.trails.keys():
-            self.trails[condition] = {}
-        
-        if time not in self.trails[condition].keys():
-            self.trails[condition][time] = {}
-
-        # store the asc file object to self.trails[condition][time]['asc']
-        asc_object = Pedar_asc('{}/{}/{}.asc'.format(self.folder, self.name, asc))
-        self.trails[condition][time]['asc'] = asc_object
-
-        # then filled foot and stances data, which complete the dictionary structure to
-        # self.trails[condition][time][foot][stance]
-        self.trails[condition][time][foot] = {}
-        for idx in range(len(stances)):
-            try:
-                stance = stances[idx]
-                if type(stance) != str:
-                    continue
-                start = float(re.search('^[0-9\.]+[^-]', stance).group())
-                end = float(re.search('[^-][0-9\.]+$', stance).group())
-
-                self.trails[condition][time][foot]['{}_start'.format(idx)] = start
-                self.trails[condition][time][foot]['{}_end'.format(idx)] = end
-                self.trails[condition][time][foot][str(idx)] = asc_object.get_time_sensor_slice(
-                    foot, start, end,
-                )
-            except:
-                print('FATAL: {} - [{}][{}][{}][{}]'.format(self.name, condition, time, foot, stance))
-
-
 class Trails_Parser(object):
     def __init__(self, path, condition_list):
         self.condition_list = condition_list
@@ -78,7 +40,7 @@ class Trails_Parser(object):
 
         self.doc = pd.read_excel(path)
         self.folder = re.search('^.*(?=/)', path).group()
-        self.subjects = {}
+        self.subjects = node.Node()
 
         length = len(self.doc.index)
         print("loading {} data entries".format(length))
@@ -92,22 +54,24 @@ class Trails_Parser(object):
             
             try:
                 condition = re.search('(?<= )[a-z ]+(?= )', asc).group()
-                time = re.search('[0-9]+$', asc).group()
+                time = int(re.search('[0-9]+$', asc).group())
                 foot = self.doc.loc[index, 'sideFoot']
                 stances = self.doc.loc[index, 'stance phase 1':]
 
                 # parse the subject's name
                 # if the subject hasn't been added to self.subjects dictionary, add it
                 subject_name = re.search('^S[0-9]+', asc).group()
-                if subject_name not in self.subjects.keys():
-                    self.subjects[subject_name] = Pedar_Subject(subject_name, self.folder)
+                if subject_name not in self.subjects.branch_names():
+                    subject_node = node.Subject_Node()
+                    subject_node.setup(name=subject_name, folder=self.folder)
+                    self.subjects.add_branch(subject_node)
                 
                 # add a trial to the subject
                 self.subjects[subject_name].add_trail(asc, condition, time, foot, stances)
                 drawProgressBar((index + 1) / length)
 
             except:
-                print('FATAL: {}-th entry: {}'.format(index + 1, asc))
+                print('FATAL when parse the {}-th entry: {}'.format(index + 1, asc))
 
     def generate_asc_pattern(self):
         conditions = '|'.join(self.condition_list)
@@ -119,6 +83,9 @@ def drawProgressBar(percent, barLen = 20):
     sys.stdout.write("\r")
     sys.stdout.write("[{:<{}}] {:.1%}".format("=" * int(barLen * percent), barLen, percent))
     sys.stdout.flush()
+    # avoiding '%' appears when progress completed
+    if percent == 1:
+        print()
 
 
 if __name__ == "__main__":
