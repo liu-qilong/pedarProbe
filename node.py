@@ -6,10 +6,10 @@ import pedar
 class Node(Dict):
     """
     python dictionary object is very convient for creating node tree
-    it can add child by: node[new_branch] = <>
-    and call any node in the format: root[branch][sub_branch]...[leaf]
+    it can call any node in the format: root[branch][sub_branch]...[leaf]
 
     but unlike other python object, it's not convient to add new attributes
+    and it's crucial to add customized processing/analysing function for different node levels
     so a node class was derived from the dictionary class to inhance its ability
     """
     def setup(self, name=None):
@@ -20,10 +20,12 @@ class Node(Dict):
         in the context of computer science
         """
         self.name = name
+        self.level = 0  # before added as other node's branch, the node is seen as root node in default
 
     def add_branch(self, branch_node):
         self[branch_node.name] = branch_node
         branch_node.set_source(self)
+        branch_node.level = self.level + 1
 
     def set_source(self, source_node):
         self.source = source_node

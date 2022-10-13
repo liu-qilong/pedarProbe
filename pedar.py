@@ -40,7 +40,9 @@ class Trails_Parser(object):
 
         self.doc = pd.read_excel(path)
         self.folder = re.search('^.*(?=/)', path).group()
+        
         self.subjects = node.Node()
+        self.subjects.setup('subjects')
 
         length = len(self.doc.index)
         print("loading {} data entries".format(length))
