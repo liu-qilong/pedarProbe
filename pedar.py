@@ -61,7 +61,7 @@ class Pedar_Subject(object):
                     continue
                 start = float(re.search('^[0-9\.]+[^-]', stance).group())
                 end = float(re.search('[^-][0-9\.]+$', stance).group())
-                
+
                 self.trails[condition][time][foot]['{}_start'.format(idx)] = start
                 self.trails[condition][time][foot]['{}_end'.format(idx)] = end
                 self.trails[condition][time][foot][str(idx)] = asc_object.get_time_sensor_slice(
@@ -107,7 +107,7 @@ class Trails_Parser(object):
                 drawProgressBar((index + 1) / length)
 
             except:
-                print('FATAL: {}-th entry'.format(index))
+                print('FATAL: {}-th entry: {}'.format(index + 1, asc))
 
     def generate_asc_pattern(self):
         conditions = '|'.join(self.condition_list)
@@ -116,12 +116,9 @@ class Trails_Parser(object):
 
 def drawProgressBar(percent, barLen = 20):
     """ percent float from 0 to 1 """
-    if percent == 1:
-        print('')
-    else:
-        sys.stdout.write("\r")
-        sys.stdout.write("[{:<{}}] {:.0f}%".format("=" * int(barLen * percent), barLen, percent * 100))
-        sys.stdout.flush()
+    sys.stdout.write("\r")
+    sys.stdout.write("[{:<{}}] {:.1%}".format("=" * int(barLen * percent), barLen, percent))
+    sys.stdout.flush()
 
 
 if __name__ == "__main__":
