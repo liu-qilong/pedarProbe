@@ -5,12 +5,12 @@ import pedar
 
 class Node(Dict):
     """
-    python dictionary object is very convient for creating node tree
+    python dictionary object is very convenient for creating node tree
     it can call any node in the format: root[branch][sub_branch]...[leaf]
 
-    but unlike other python object, it's not convient to add new attributes
-    and it's crucial to add customized processing/analysing function for different node levels
-    so a node class was derived from the dictionary class to inhance its ability
+    but unlike other python object, it's not convenient to add new attributes
+    while adding customised processing/analysing function for different node levels and adding attributes accordingly is crucial
+    so a node class was derived from the dictionary class to enhance its ability
     """
     def setup(self, name=None):
         """
