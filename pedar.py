@@ -3,6 +3,8 @@ import sys
 import pandas as pd
 
 import node
+import analyse
+import export
 
 class Pedar_asc(object):
     def __init__(self, path, skiprows=9, header=9, index_col=0):
@@ -78,6 +80,15 @@ class Trails_Parser(object):
     def generate_asc_pattern(self):
         conditions = '|'.join(self.condition_list)
         self.asc_pattern = 'S[1-9][0-9]* (' + conditions + ') [1-9][0-9]*$'
+
+    def sensor_peak(self, is_export=True, export_folder='result'):
+        # compute average peak pressure through data tree recursively
+        # for each level, (average) peak pressure is stored as node.sensor_peak
+        for subject in self.subjects.branches():
+            analyse.sensor_peak(subject)
+
+        if is_export:
+            export.export_sensor_peak(self.subjects, export_folder)
 
 
 def drawProgressBar(percent, barLen = 20):
