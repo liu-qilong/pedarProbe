@@ -89,10 +89,19 @@ class Trails_Parser(object):
         # compute average peak pressure through data tree recursively
         # for each level, (average) peak pressure is stored as node.sensor_peak
         for subject in self.subjects.branches():
-            analyse.sensor_peak(subject)
+            analyse.attribute_average_up(subject, attr_name='sensor_peak', func_attr=analyse.stance_peak)
 
         if is_export:
-            export.export_sensor_peak(self.subjects, export_folder)
+            export.export_conditions_attribute(self.subjects, 'sensor_peak', export_folder)
+
+    def sensor_pti(self, is_export=True, export_folder='result'):
+        # compute average pressure-time integral through data tree recursively
+        # for each level, (average) pressure-time integral is stored as node.sensor_peak
+        for subject in self.subjects.branches():
+            analyse.attribute_average_up(subject, attr_name='sensor_pti', func_attr=analyse.stance_pti)
+
+        if is_export:
+            export.export_conditions_attribute(self.subjects, 'sensor_pti', export_folder)
 
 
 def drawProgressBar(percent, barLen = 20):

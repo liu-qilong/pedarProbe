@@ -16,11 +16,12 @@ class Node(Dict):
         """
         since the dictionary's __init__() is different from ordinary python class
         the init procedure are implemented in setup()
-        withou calling setup(), the node object doesn't provide full features of a node
+        without calling setup(), the node object doesn't provide full features of a node
         in the context of computer science
         """
         self.name = name
         self.level = 0  # before added as other node's branch, the node is seen as root node in default
+        self.attribute = {} # empty dictionary for storing analysed attributes, e.g. peak pressure
 
     def add_branch(self, branch_node):
         self[branch_node.name] = branch_node
