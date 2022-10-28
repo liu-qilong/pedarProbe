@@ -79,10 +79,10 @@ class Subject_Node(Node):
 
                 start = float(re.search('^[0-9\.]+[^-]', stance).group())
                 end = float(re.search('[^-][0-9\.]+$', stance).group())
-                df = asc_object.get_time_sensor_slice(foot, start, end)
+                df = asc_object.get_time_sensor_slice(foot, start, end)               
 
                 stance_node = Stance_Node()
-                stance_node.setup(df, start, end, name=idx)
+                stance_node.setup(df, start, end, name=idx + 1)
                 self[condition][time][foot].add_branch(stance_node)
 
             except:

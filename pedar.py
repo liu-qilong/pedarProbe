@@ -12,12 +12,16 @@ class Pedar_asc(object):
         self.path = path
         self.doc = pd.read_csv(self.path, delimiter='\t', skiprows=skiprows, header=header, names=names, index_col=index_col)
 
+        # column length check
+        if self.doc.shape[1] != 199:
+            print("\n{}'s dataframe has abnormal shape".format(path))
+
     def id_map(self, foot, sensor_id):
         if foot == 'L' or foot == 'l':
             # left foot sensor 1~99 map to column 0~98
             return sensor_id - 1
         elif foot == 'R' or foot == 'r':
-            # right foot sensor 1~99 map to column 99~198
+            # right foot sensor 1~99 map to column 99~197
             return sensor_id + 98
         else:
             print('invalid foot type when enquiry {}'.format(self.path))
