@@ -1,7 +1,7 @@
 import pandas as pd
 
 
-def export_conditions_attribute(subjects, attr_name, export_folder='result'):
+def export_conditions_attribute(subjects, attr_name, export_folder='output'):
     # retrieve all conditions' sensor peak pressure
     row_name_list = []
     attribute_list = []

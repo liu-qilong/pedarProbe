@@ -1,4 +1,6 @@
 .DS_Store
 __pycache__/
-subjects/
+data/
 result/
+output/
+docs/build/

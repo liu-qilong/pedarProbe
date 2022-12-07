@@ -48,7 +48,7 @@ class Trails_Parser(object):
         self.folder = re.search('^.*(?=/)', path).group()
         
         self.subjects = node.Node()
-        self.subjects.setup('subjects')
+        self.subjects.setup('data/subjects')
 
         length = len(self.doc.index)
         print("loading {} data entries".format(length))
@@ -85,7 +85,7 @@ class Trails_Parser(object):
         conditions = '|'.join(self.condition_list)
         self.asc_pattern = 'S[1-9][0-9]* (' + conditions + ') [1-9][0-9]*$'
 
-    def sensor_peak(self, is_export=True, export_folder='result'):
+    def sensor_peak(self, is_export=True, export_folder='output'):
         # compute average peak pressure through data tree recursively
         # for each level, (average) peak pressure is stored as node.sensor_peak
         for subject in self.subjects.branches():
@@ -94,7 +94,7 @@ class Trails_Parser(object):
         if is_export:
             export.export_conditions_attribute(self.subjects, 'sensor_peak', export_folder)
 
-    def sensor_pti(self, is_export=True, export_folder='result'):
+    def sensor_pti(self, is_export=True, export_folder='output'):
         # compute average pressure-time integral through data tree recursively
         # for each level, (average) pressure-time integral is stored as node.sensor_peak
         for subject in self.subjects.branches():
@@ -116,4 +116,4 @@ def drawProgressBar(percent, barLen = 20):
 
 if __name__ == "__main__":
     condition_list = ['fast walking', 'slow walking', 'normal walking']
-    data = Trails_Parser("subjects/walking plantar pressure time slot.xlsx", condition_list)
+    data = Trails_Parser("data/subjects/walking plantar pressure time slot.xlsx", condition_list)
