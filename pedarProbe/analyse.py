@@ -1,4 +1,9 @@
+from __future__ import annotations
+from typing import Type, Union
+
 import pandas as pd
+
+import node
 
 def stance_peak(stance_node):
     """ compute the peak pressure of a stance """

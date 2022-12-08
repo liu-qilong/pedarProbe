@@ -1,3 +1,6 @@
+from __future__ import annotations
+from typing import Type, Union
+
 import re
 from typing import Dict
 
@@ -45,7 +48,7 @@ class Subject_Node(Node):
 
     def add_trail(self, asc, condition, time, foot, stances):
         """
-        the same trail's information in the same condition and time is seperated in different entries
+        the same trail's information in the same condition and time is separated in different entries
         each one contains one foot type with stances timestamp
         therefore firstly construct the self.trails[condition][time] dictionary construction
         """

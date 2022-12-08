@@ -3,4 +3,4 @@ __pycache__/
 data/
 result/
 output/
-docs/build/
+build/
