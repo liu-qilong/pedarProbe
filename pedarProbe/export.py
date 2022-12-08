@@ -25,44 +25,64 @@ def export_conditions_attribute(subjects, attr_name, export_folder='output', sav
     df_export.to_excel("{}/{}{}.xlsx".format(export_folder, attr_name, save_suffix))
 
 
-def export_attribute_heatmap(node: Type[node.Node], attr_name: str = 'sensor_peak', is_export: bool = True, mask_dir: str = 'data/left_foot_mask.png', export_folder: str = 'output', save_suffix: str = ''):
-    """Convert an attribute of a node to hot map figure and export."""
+class FootHeatmap(object):
+    l_index = None
+    r_index = None
 
-    # load the left foot mask image
-    # flip it as the right foot mask image
-    l_mask = Image.open(mask_dir)
-    r_mask = ImageOps.mirror(l_mask)
+    def __init__(self, node: Type[node.Node], attr_name: str = 'sensor_peak', mask_dir: str = 'data/left_foot_mask.png'):
+        # if foot mask has never been loaded, call load_foot_mask() method
+        if self.l_index is None:
+            self.load_foot_mask(mask_dir)
 
-    # detect pixels of area no.1~198 and store the corresponding indexes
-    l_pedar = np.array(l_mask).astype(np.float64)
-    r_pedar = np.array(r_mask).astype(np.float64)
-    l_index = {}
-    r_index = {}
+        self.fill_foot_heat_map(node, attr_name)
 
-    for n in range(0, 199):
-        l_index[n] = np.where(l_pedar == n + 1)
-        r_index[n + 99] = np.where(r_pedar == n + 1)
+    @classmethod
+    def load_foot_mask(cls, mask_dir: str = 'data/left_foot_mask.png'):
+        # load the left foot mask image
+        # flip it as the right foot mask image
+        l_mask = Image.open(mask_dir)
+        r_mask = ImageOps.mirror(l_mask)
 
-    # fill the attribute distribution
-    for n in node.attribute[attr_name].index:
-        if n <= 99:
-            # filling left foot area
-            l_pedar[l_index[n]] = node.attribute[attr_name][n]
-        else:
-            # filling right foot area
-            r_pedar[r_index[n]] = node.attribute[attr_name][n]
+        # detect pixels of area no.1~198 and store the corresponding indexes
+        cls.l_pedar = np.array(l_mask).astype(np.float64)
+        cls.r_pedar = np.array(r_mask).astype(np.float64)
+        cls.l_index = {}
+        cls.r_index = {}
 
-    # show as heatmap
-    plt.imshow(l_pedar, cmap='cool')
-    plt.show()
+        for n in range(0, 199):
+            cls.l_index[n] = np.where(cls.l_pedar == n + 1)
+            cls.r_index[n + 99] = np.where(cls.r_pedar == n + 1)
 
-    plt.imshow(r_pedar, cmap='cool')
-    plt.show()
+    def fill_foot_heat_map(self, node: Type[node.Node], attr_name: str = 'sensor_peak'):
+        # fill the attribute distribution
+        for n in node.attribute[attr_name].index:
+            if n <= 99:
+                # filling left foot area
+                self.l_pedar[self.l_index[n]] = node.attribute[attr_name][n]
+            else:
+                # filling right foot area
+                self.r_pedar[self.r_index[n]] = node.attribute[attr_name][n]
 
-    # export as heatmap
-    if is_export:
-        plt.imshow(l_pedar, cmap='cool')
-        plt.savefig('{}/l_heatmap{}'.format(export_folder, save_suffix))
+    def export_foot_heatmap(self, is_export: bool = True, export_folder: str = 'output', save_suffix: str = ''):
+        # calculate value range
+        minmin = np.min([np.min(self.l_pedar), np.min(self.r_pedar)])
+        maxmax = np.max([np.max(self.l_pedar), np.max(self.r_pedar)])
 
-        plt.imshow(r_pedar, cmap='cool')
-        plt.savefig('{}/r_heatmap{}'.format(export_folder, save_suffix))
+        # show and export as heatmap
+        fig, axes = plt.subplots(nrows=1, ncols=2, figsize=(7, 8))
+        l_img = axes[0].imshow(self.l_pedar, cmap='cool', vmin=minmin, vmax=maxmax)
+        r_img = axes[1].imshow(self.r_pedar, cmap='cool', vmin=minmin, vmax=maxmax)
+
+        fig.subplots_adjust(right=0.85)
+        cbar_ax = fig.add_axes([0.88, 0.15, 0.04, 0.7])
+        fig.colorbar(r_img, cbar_ax)
+        plt.show()
+
+        if is_export:
+            fig.savefig('{}/foot_heatmap{}'.format(export_folder, save_suffix))
+
+    def __add__(self, other):
+        pass
+
+    def __sub__(self, other):
+        pass
