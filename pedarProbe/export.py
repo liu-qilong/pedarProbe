@@ -113,3 +113,9 @@ class FootHeatmap(object):
         new_hm.l_pedar /= val
         new_hm.r_pedar /= val
         return new_hm
+
+    @staticmethod
+    def average(*hms):
+        # start parameter of sum() is an int, which cause issue
+        # therefore set the start of sum as hms[0] and the others as hms[1:]
+        return sum(hms[1:], start=hms[0]) / len(hms)
