@@ -82,12 +82,22 @@ class Trails_Parser(object):
                 
                 # print progress bar and break if exceed max read rate
                 read_rate = (index + 1) / length
-                drawProgressBar(read_rate)
+                self.drawProgressBar(read_rate)
                 if read_rate >= max_read_rate:
                     break
 
             except:
                 print('FATAL when parse the {}-th entry: {}'.format(index + 1, asc))
+
+    @staticmethod
+    def drawProgressBar(percent, barLen = 20):
+        """ percent float from 0 to 1 """
+        sys.stdout.write("\r")
+        sys.stdout.write("[{:<{}}] {:.1%}".format("=" * int(barLen * percent), barLen, percent))
+        sys.stdout.flush()
+        # avoiding '%' appears when progress completed
+        if percent == 1:
+            print()
 
     def generate_asc_pattern(self):
         conditions = '|'.join(self.condition_list)
@@ -110,16 +120,6 @@ class Trails_Parser(object):
 
         if is_export:
             export.export_conditions_attribute(self.subjects, 'sensor_pti', export_folder)
-
-
-def drawProgressBar(percent, barLen = 20):
-    """ percent float from 0 to 1 """
-    sys.stdout.write("\r")
-    sys.stdout.write("[{:<{}}] {:.1%}".format("=" * int(barLen * percent), barLen, percent))
-    sys.stdout.flush()
-    # avoiding '%' appears when progress completed
-    if percent == 1:
-        print()
 
 
 if __name__ == "__main__":

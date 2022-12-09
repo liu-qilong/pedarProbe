@@ -105,5 +105,63 @@ class Leaf_Node(Node):
         pass
 
 
-def layer_shuffle(node: Type[Node], shuffle: tuple = (1, 2, 3, 4, 5)) -> Type[Node]:
-    pass
+def node_restructure(node: Type[Node], layers: tuple = ('subject', 'condition', 'time', 'foot', 'stance')) -> Type[Node]:
+    # collect all leaf nodes
+    def collect_leaf(node: Type[Node], leaf_nodes: list = []) -> Iterable[Leaf_Node]:
+        if type(node) is Leaf_Node:
+            # when recursion reaches leaf level, print the data frame's shape
+            leaf_nodes.append(node)
+
+        else:
+            for branch in node.branches():
+                leaf_nodes = collect_leaf(branch, leaf_nodes)
+        
+        return leaf_nodes
+
+    leaf_nodes = collect_leaf(node)
+
+    # prepare layer index dictionary for access data in node.loc
+    layer2index = {
+        'subject': 1,
+        'condition': 2,
+        'time': 3,
+        'foot': 4,
+        'stance': 5,
+    }
+
+    # for full layers structure, dismiss the last one
+    # since, in this case, the last layer can be automatically identified
+    if len(layers) == 5:
+        layers = layers[:-1]
+
+    # create root node
+    root_node = Node()
+    root_node.setup('subjects')
+
+    # parse each leaf node to construct the new node tree
+    for leaf in leaf_nodes:
+        loc = copy.deepcopy(leaf.loc)
+        loc[0] = None
+        current_node = root_node
+
+        # add layer to the node tree as instructed
+        for layer in layers:
+            name = loc[layer2index[layer]]
+            loc[layer2index[layer]] = None  # remove the used layer name
+            
+            branch_node = Node()
+            branch_node.setup(name)
+            
+            current_node.add_branch(branch_node)
+            current_node = branch_node
+        
+        # the unused layers' names are combined as the new leaf node's name
+        loc = [str(item) for item in loc if item is not None]
+        leaf_name = '-'.join(loc)
+
+        # construct the new leaf node and add it to the node tree
+        leaf_node = Leaf_Node()
+        leaf_node.setup(name=leaf_name, df=leaf.df, start=leaf.start, end=leaf.end)
+        current_node.add_branch(leaf_node)
+    
+    return root_node
