@@ -43,7 +43,7 @@ class Pedar_asc(object):
 
 
 class Trails_Parser(object):
-    def __init__(self, path, condition_list):
+    def __init__(self, path, condition_list, max_read_rate: float = 1.0):
         self.condition_list = condition_list
         self.generate_asc_pattern()
 
@@ -79,7 +79,12 @@ class Trails_Parser(object):
                 
                 # add a trial to the subject
                 self.subjects[subject_name].add_trail(asc, condition, time, foot, stances)
-                drawProgressBar((index + 1) / length)
+                
+                # print progress bar and break if exceed max read rate
+                read_rate = (index + 1) / length
+                drawProgressBar(read_rate)
+                if read_rate >= max_read_rate:
+                    break
 
             except:
                 print('FATAL when parse the {}-th entry: {}'.format(index + 1, asc))

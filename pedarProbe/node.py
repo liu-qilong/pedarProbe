@@ -62,9 +62,8 @@ class Subject_Node(Node):
             time_node.setup(name=time)
             self[condition].add_branch(time_node)
 
-        # store the asc file object to self.trails[condition][time] node
+        # read asc file object
         asc_object = pedar.Pedar_asc('{}/{}/{}.asc'.format(self.folder, self.name, asc))
-        self[condition][time].asc = asc_object
 
         # then filled foot and stances data, which complete the dictionary structure to
         # self[condition][time][foot][stance]
@@ -83,9 +82,9 @@ class Subject_Node(Node):
 
                 start = float(re.search('^[0-9\.]+[^-]', stance).group())
                 end = float(re.search('[^-][0-9\.]+$', stance).group())
-                df = asc_object.get_time_sensor_slice(foot, start, end)               
+                df = asc_object.get_time_sensor_slice(foot, start, end)
 
-                stance_node = Stance_Node()
+                stance_node = Leaf_Node()
                 stance_node.setup(df, start, end, name=idx + 1)
                 self[condition][time][foot].add_branch(stance_node)
 
@@ -93,7 +92,7 @@ class Subject_Node(Node):
                 print('FATAL when add trail {} {} {} {} {}'.format(self.name, condition, time, foot, stance))
 
 
-class Stance_Node(Node):
+class Leaf_Node(Node):
     def setup(self, df, start, end, *args, **kwargs):
         Node.setup(self, *args, **kwargs)
         self.df = df
@@ -102,3 +101,7 @@ class Stance_Node(Node):
 
     def compute_peak():
         pass
+
+
+def layer_shuffle(node: Type[Node], shuffle: tuple = (1, 2, 3, 4, 5)) -> Type[Node]:
+    pass
