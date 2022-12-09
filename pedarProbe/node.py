@@ -2,6 +2,7 @@ from __future__ import annotations
 from typing import Type, Union
 
 import re
+import copy
 from typing import Dict
 
 import pedar
@@ -23,13 +24,14 @@ class Node(Dict):
         in the context of computer science
         """
         self.name = name
-        self.level = 0  # before added as other node's branch, the node is seen as root node in default
+        self.loc = [name, ]
         self.attribute = {} # empty dictionary for storing analysed attributes, e.g. peak pressure
 
     def add_branch(self, branch_node):
         self[branch_node.name] = branch_node
         branch_node.set_source(self)
-        branch_node.level = self.level + 1
+        branch_node.loc = copy.deepcopy(self.loc)
+        branch_node.loc.append(branch_node.name)
 
     def set_source(self, source_node):
         self.source = source_node

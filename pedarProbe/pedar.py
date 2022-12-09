@@ -51,7 +51,7 @@ class Trails_Parser(object):
         self.folder = re.search('^.*(?=/)', path).group()
         
         self.subjects = node.Node()
-        self.subjects.setup('data/subjects')
+        self.subjects.setup('subjects')
 
         length = len(self.doc.index)
         print("loading {} data entries".format(length))
