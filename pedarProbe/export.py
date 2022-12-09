@@ -1,6 +1,7 @@
 from __future__ import annotations
 from typing import Type, Union
 
+import copy
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
@@ -40,20 +41,28 @@ class FootHeatmap(object):
     def load_foot_mask(cls, mask_dir: str = 'data/left_foot_mask.png'):
         # load the left foot mask image
         # flip it as the right foot mask image
-        l_mask = Image.open(mask_dir)
-        r_mask = ImageOps.mirror(l_mask)
+        l_img = Image.open(mask_dir)
+        r_img = ImageOps.mirror(l_img)
+
+        l_mask = np.array(l_img).astype(np.float64)
+        r_mask = np.array(r_img).astype(np.float64)
+
+        cls.l_shape = l_mask.shape
+        cls.r_shape = r_mask.shape
 
         # detect pixels of area no.1~198 and store the corresponding indexes
-        cls.l_pedar = np.array(l_mask).astype(np.float64)
-        cls.r_pedar = np.array(r_mask).astype(np.float64)
         cls.l_index = {}
         cls.r_index = {}
 
         for n in range(0, 199):
-            cls.l_index[n] = np.where(cls.l_pedar == n + 1)
-            cls.r_index[n + 99] = np.where(cls.r_pedar == n + 1)
+            cls.l_index[n] = np.where(l_mask == n + 1)
+            cls.r_index[n + 99] = np.where(r_mask == n + 1)
 
     def fill_foot_heat_map(self, node: Type[node.Node], attr_name: str = 'sensor_peak'):
+        # create empty left and right distribution
+        self.l_pedar = np.zeros(self.l_shape)
+        self.r_pedar = np.zeros(self.r_shape)
+
         # fill the attribute distribution
         for n in node.attribute[attr_name].index:
             if n <= 99:
@@ -81,8 +90,26 @@ class FootHeatmap(object):
         if is_export:
             fig.savefig('{}/foot_heatmap{}'.format(export_folder, save_suffix))
 
-    def __add__(self, other):
-        pass
+    def __add__(self, other: Type[FootHeatmap]) -> Type[FootHeatmap]:
+        new_hm = copy.deepcopy(self)
+        new_hm.l_pedar += other.l_pedar
+        new_hm.r_pedar += other.r_pedar
+        return new_hm
 
-    def __sub__(self, other):
-        pass
+    def __sub__(self, other: Type[FootHeatmap]) -> Type[FootHeatmap]:
+        new_hm = copy.deepcopy(self)
+        new_hm.l_pedar -= other.l_pedar
+        new_hm.r_pedar -= other.r_pedar
+        return new_hm
+
+    def __mul__(self, val: Union[float, int]) -> Type[FootHeatmap]:
+        new_hm = copy.deepcopy(self)
+        new_hm.l_pedar *= val
+        new_hm.r_pedar *= val
+        return new_hm
+
+    def __truediv__(self, val: Union[float, int]) -> Type[FootHeatmap]:
+        new_hm = copy.deepcopy(self)
+        new_hm.l_pedar /= val
+        new_hm.r_pedar /= val
+        return new_hm
