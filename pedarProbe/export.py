@@ -72,15 +72,22 @@ class FootHeatmap(object):
                 # filling right foot area
                 self.r_pedar[self.r_index[n]] = node.attribute[attr_name][n]
 
-    def export_foot_heatmap(self, is_export: bool = True, export_folder: str = 'output', save_suffix: str = ''):
-        # calculate value range
-        minmin = np.min([np.min(self.l_pedar), np.min(self.r_pedar)])
-        maxmax = np.max([np.max(self.l_pedar), np.max(self.r_pedar)])
+    def export_foot_heatmap(self, is_export: bool = True, range: Union[str, tuple] = 'static', export_folder: str = 'output', save_suffix: str = ''):
+        # value range
+        if range == 'static':
+            range_min = 0
+            range_max = 300
+        elif range == 'auto':
+            range_min = np.min([np.min(self.l_pedar), np.min(self.r_pedar)])
+            range_max = np.max([np.max(self.l_pedar), np.max(self.r_pedar)])
+        else:
+            # manually control with a tuple of (min, max)
+            range_min, range_max = range
 
         # show and export as heatmap
         fig, axes = plt.subplots(nrows=1, ncols=2, figsize=(7, 8))
-        l_img = axes[0].imshow(self.l_pedar, cmap='cool', vmin=minmin, vmax=maxmax)
-        r_img = axes[1].imshow(self.r_pedar, cmap='cool', vmin=minmin, vmax=maxmax)
+        l_img = axes[0].imshow(self.l_pedar, cmap='cool', vmin=range_min, vmax=range_max)
+        r_img = axes[1].imshow(self.r_pedar, cmap='cool', vmin=range_min, vmax=range_max)
 
         fig.subplots_adjust(right=0.85)
         cbar_ax = fig.add_axes([0.88, 0.15, 0.04, 0.7])
