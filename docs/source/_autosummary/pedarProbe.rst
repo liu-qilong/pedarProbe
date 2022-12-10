@@ -35,5 +35,6 @@
    pedarProbe.analyse
    pedarProbe.export
    pedarProbe.node
-   pedarProbe.pedar
+   pedarProbe.parse
+   pedarProbe.task
 

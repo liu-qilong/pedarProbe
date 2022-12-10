@@ -1,7 +1,7 @@
-pedarProbe.pedar.Pedar\_asc
+pedarProbe.parse.Pedar\_asc
 ===========================
 
-.. currentmodule:: pedarProbe.pedar
+.. currentmodule:: pedarProbe.parse
 
 .. autoclass:: Pedar_asc
    :members:

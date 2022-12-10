@@ -1,7 +1,7 @@
-pedarProbe.pedar
+pedarProbe.parse
 ================
 
-.. automodule:: pedarProbe.pedar
+.. automodule:: pedarProbe.parse
   
    
    
@@ -16,14 +16,13 @@ pedarProbe.pedar
       :template: custom-class-template.rst
    
       Pedar_asc
-      Trails_Parser
    
    
 
    
    
 
-   .. inheritance-diagram:: pedarProbe.pedar
+   .. inheritance-diagram:: pedarProbe.parse
       :caption: Inheritance Relationship
       :parts: -1
    
@@ -36,7 +35,9 @@ pedarProbe.pedar
    .. autosummary::
       :toctree:
    
-      drawProgressBar
+      add_trail
+      progress_bar
+      trails_parse
    
    
 

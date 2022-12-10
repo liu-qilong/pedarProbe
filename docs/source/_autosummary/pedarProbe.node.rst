@@ -15,9 +15,10 @@ pedarProbe.node
       :toctree:
       :template: custom-class-template.rst
    
+      DataNode
+      DynamicNode
       Node
-      Stance_Node
-      Subject_Node
+      PedarNode
    
    
 

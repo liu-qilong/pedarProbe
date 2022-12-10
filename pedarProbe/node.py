@@ -77,7 +77,7 @@ class Node(Dict):
         
         return nodes
 
-    def collect_leaf(self, nodes: list) -> Iterable[Data_Node]:
+    def collect_leaf(self, nodes: list) -> Iterable[DataNode]:
         if self.is_leaf():
             # when recursion reaches leaf level, print the data frame's shape
             nodes.append(self)
@@ -97,18 +97,20 @@ class Node(Dict):
             branch.print()
 
 
-class Pedar_Node(Node):
+default_layout = {
+    'root': 0,
+    'subject': 1, 
+    'condition': 2,
+    'time': 3,
+    'foot': 4,
+    'stance': 5,
+}
+
+class DynamicNode(Node):
     def __init__(self, *args, **kwargs):
         Node.__init__(self, *args, **kwargs)
+        self.loc_map = default_layout
 
-        self.loc_map = {
-            'root': 0,
-            'subject': 1, 
-            'condition': 2,
-            'time': 3,
-            'foot': 4,
-            'stance': 5,
-        }
     # access attribute
     def layer_layout(self) -> tuple:
 
@@ -148,14 +150,14 @@ class Pedar_Node(Node):
             layer = layout[idx]
             self.loc_map[layer] = start_index + idx
 
-    def restructure(self, layout: tuple = ('root', 'subject', 'condition', 'time', 'foot', 'stance')) -> Type[Pedar_Node]:
+    def restructure(self, layout: tuple = ('root', 'subject', 'condition', 'time', 'foot', 'stance')) -> Type[PedarNode]:
         # collect all leaf nodes
         leaf_nodes = self.collect_leaf(nodes=[])
 
         # create node
         new_node = self.clean_copy()
         '''
-        new_node = Pedar_Node()
+        new_node = PedarNode()
         new_node.setup(self.name)
         new_node.loc = copy.deepcopy(self.loc)
         new_node.level = copy.deepcopy(self.level)
@@ -180,7 +182,7 @@ class Pedar_Node(Node):
                 loc[leaf.loc_map[layer]] = None  # remove the used layer name
                 
                 if name not in current_node.branch_names():
-                    branch_node = Pedar_Node()
+                    branch_node = PedarNode()
                     branch_node.setup(name)
                     branch_node.change_loc_map(new_node.level, layout)
                     current_node.add_branch(branch_node)
@@ -192,13 +194,14 @@ class Pedar_Node(Node):
             leaf_name = '-'.join(loc)
 
             # construct the new leaf node and add it to the node tree
-            leaf_node = Data_Node()
+            leaf_node = DataNode()
             leaf_node.setup(name=leaf_name, df=leaf.df, start=leaf.start, end=leaf.end)
             leaf_node.change_loc_map(new_node.level, layout)
             current_node.add_branch(leaf_node)
         
         return new_node
 
+class PedarNode(DynamicNode):
     # data analysis
     def sensor_peak(self, is_export=False, export_layer: str = 'root', export_folder='output', save_suffix: str = ''):
         # compute average peak pressure through data tree recursively
@@ -221,7 +224,7 @@ class Pedar_Node(Node):
         return hm
 
 
-class Data_Node(Pedar_Node):
+class DataNode(PedarNode):
     def setup(self, df, start, end, *args, **kwargs):
         Node.setup(self, *args, **kwargs)
         self.df = df

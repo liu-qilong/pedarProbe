@@ -5,7 +5,7 @@ import re
 import sys
 import pandas as pd
 
-from node import Pedar_Node, Data_Node
+from node import PedarNode, DataNode
 
 class Pedar_asc(object):
     def __init__(self, path, skiprows=9, header=9, index_col=0):
@@ -57,12 +57,12 @@ def add_trail(node, asc, folder, condition, time, foot, stances):
     therefore firstly construct the self.trails[condition][time] dictionary construction
     """
     if condition not in node.branch_names():
-        condition_node = Pedar_Node()
+        condition_node = PedarNode()
         condition_node.setup(name=condition)
         node.add_branch(condition_node)
     
     if time not in node[condition].branch_names():
-        time_node = Pedar_Node()
+        time_node = PedarNode()
         time_node.setup(name=time)
         node[condition].add_branch(time_node)
 
@@ -71,7 +71,7 @@ def add_trail(node, asc, folder, condition, time, foot, stances):
 
     # then filled foot and stances data, which complete the dictionary structure to
     # node[condition][time][foot][stance]
-    foot_node = Pedar_Node()
+    foot_node = PedarNode()
     foot_node.setup(name=foot)
     node[condition][time].add_branch(foot_node)
 
@@ -87,7 +87,7 @@ def add_trail(node, asc, folder, condition, time, foot, stances):
         end = float(re.search('[^-][0-9\.]+$', stance).group())
         df = asc_object.get_time_sensor_slice(foot, start, end)
 
-        stance_node = Data_Node()
+        stance_node = DataNode()
         stance_node.setup(df, start, end, name=idx + 1)
         node[condition][time][foot].add_branch(stance_node)
 
@@ -98,7 +98,7 @@ def trails_parse(path: Union[None, str], condition_list, max_read_rate: float = 
     asc_pattern = 'S[1-9][0-9]* (' + conditions + ') [1-9][0-9]*$'
     
     # create root node
-    root = Pedar_Node()
+    root = PedarNode()
     root.setup('root')
 
     # load the summary file
@@ -126,7 +126,7 @@ def trails_parse(path: Union[None, str], condition_list, max_read_rate: float = 
         subject_name = re.search('^S[0-9]+', asc).group()
 
         if subject_name not in root.branch_names():
-            subject_node = Pedar_Node()
+            subject_node = PedarNode()
             subject_node.setup(subject_name)
             root.add_branch(subject_node)
         

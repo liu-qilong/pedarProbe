@@ -21,14 +21,20 @@ pedarProbe.node.Node
       ~Node.add_branch
       ~Node.branch_names
       ~Node.branches
+      ~Node.clean_copy
       ~Node.clear
+      ~Node.collect_layer
+      ~Node.collect_leaf
       ~Node.copy
       ~Node.fromkeys
       ~Node.get
+      ~Node.is_layer
+      ~Node.is_leaf
       ~Node.items
       ~Node.keys
       ~Node.pop
       ~Node.popitem
+      ~Node.print
       ~Node.set_source
       ~Node.setdefault
       ~Node.setup
