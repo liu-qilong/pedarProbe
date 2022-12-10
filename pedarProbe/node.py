@@ -52,15 +52,34 @@ class Node(Dict):
     def is_leaf(self):
         return len(self.branch_names()) == 0
 
-    def print_shapes(self):
+    def print(self):
         """ recursively print the structure tree and the leaf's data frame shape. """
         print(' ' * self.level + str(self.name))
 
         for branch in self.branches():
-            branch.print_shapes()
+            branch.print()
+
+    def clean_copy(self) -> Type[Node]:
+        new_node = self.__class__()
+        new_node.setup(self.name)
+        new_node.loc = self.loc
+        new_node.level = self.level
+        return new_node
 
 
 class Pedar_Node(Node):
+    def __init__(self, *args, **kwargs):
+        Node.__init__(self, *args, **kwargs)
+
+        self.loc_map = {
+            'root': 0,
+            'subject': 1, 
+            'condition': 2,
+            'time': 3,
+            'foot': 4,
+            'stance': 5,
+        }
+
     def sensor_peak(self, is_export=True, export_folder='output'):
         # compute average peak pressure through data tree recursively
         # for each level, (average) peak pressure is stored as node.sensor_peak
@@ -77,7 +96,34 @@ class Pedar_Node(Node):
         if is_export:
             export.export_conditions_attribute(self, 'sensor_pti', export_folder)
 
-    def restructure(self, layers: tuple = ('subject', 'condition', 'time', 'foot', 'stance')) -> Type[Node]:
+    def change_loc_map(self, start_level, layers):
+        # calculate the index in loc of the first layer to be changed
+        start_index = start_level + 1
+
+        # delete the layers from the first layer to be changed
+        del_keys = []
+        for key, value in self.loc_map.items():
+            if value >= start_index:
+                del_keys.append(key)
+        
+        for key in del_keys:
+            del self.loc_map[key]
+
+        # change the layer indexes as instructed
+        num_layer_change = len(layers)
+
+        for idx in range(num_layer_change):
+            layer = layers[idx]
+            self.loc_map[layer] = start_index + idx
+
+        # if the restructure compress some layers
+        # name the last layer as 'compress'
+        max_index = start_index + num_layer_change - 1
+        if max_index < 5:
+            self.loc_map['compress'] = max_index + 1
+
+
+    def restructure(self, layers: tuple = ('subject', 'condition', 'time', 'foot', 'stance')) -> Type[Pedar_Node]:
         # collect all leaf nodes
         def collect_leaf(node: Type[Node], leaf_nodes: list = []) -> Iterable[Data_Node]:
             if node.is_leaf():
@@ -92,38 +138,36 @@ class Pedar_Node(Node):
 
         leaf_nodes = collect_leaf(self)
 
-        # prepare layer index dictionary for access data in node.loc
-        layer2index = {
-            'subject': 1,
-            'condition': 2,
-            'time': 3,
-            'foot': 4,
-            'stance': 5,
-        }
-
         # for full layers structure, dismiss the last one
         # since, in this case, the last layer can be automatically identified
         if len(layers) == 5:
             layers = layers[:-1]
 
-        # create root node
-        root_node = Pedar_Node()
-        root_node.setup('subjects')
+        # create node
+        new_node = self.clean_copy()
+        new_node.change_loc_map(self.level, layers)
 
         # parse each leaf node to construct the new node tree
         for leaf in leaf_nodes:
+            # loc is copied to generate name of the restructured layers
+            # and the unused parts will be concatenated as the name of the leaf node
             loc = copy.deepcopy(leaf.loc)
-            loc[0] = None
-            current_node = root_node
+
+            # set the layer upper than the self node as None since they won't be used
+            for id in range(self.level + 1):
+                loc[id] = None
+
+            current_node = new_node
 
             # add layer to the node tree as instructed
             for layer in layers:
-                name = loc[layer2index[layer]]
-                loc[layer2index[layer]] = None  # remove the used layer name
+                name = loc[self.loc_map[layer]]
+                loc[self.loc_map[layer]] = None  # remove the used layer name
                 
                 if name not in current_node.branch_names():
-                    branch_node = Node()
+                    branch_node = Pedar_Node()
                     branch_node.setup(name)
+                    branch_node.change_loc_map(self.level, layers)
                     current_node.add_branch(branch_node)
                     
                 current_node = current_node[name]
@@ -135,12 +179,13 @@ class Pedar_Node(Node):
             # construct the new leaf node and add it to the node tree
             leaf_node = Data_Node()
             leaf_node.setup(name=leaf_name, df=leaf.df, start=leaf.start, end=leaf.end)
+            leaf_node.change_loc_map(self.level, layers)
             current_node.add_branch(leaf_node)
         
-        return root_node
+        return new_node
 
 
-class Data_Node(Node):
+class Data_Node(Pedar_Node):
     def setup(self, df, start, end, *args, **kwargs):
         Node.setup(self, *args, **kwargs)
         self.df = df
