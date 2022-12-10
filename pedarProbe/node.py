@@ -72,18 +72,18 @@ class Node(Dict):
         new_node.level = copy.deepcopy(self.level)
         return new_node
 
-    def collect_layers(node: Type[Node], layer: str, nodes: list = []) -> Iterable[Type[Node]]:
+    def collect_layer(node: Type[Node], layer: str, nodes: list) -> Iterable[Type[Node]]:
         if node.is_level(layer):
             # when recursion reaches leaf level, print the data frame's shape
             nodes.append(node)
 
         else:
             for branch in node.branches():
-                nodes = branch.collect_layers(branch, layer, nodes)
+                nodes = branch.collect_layer(layer, nodes)
         
         return nodes
 
-    def collect_leaf(self, nodes: list = []) -> Iterable[Data_Node]:
+    def collect_leaf(self, nodes: list) -> Iterable[Data_Node]:
         if self.is_leaf():
             # when recursion reaches leaf level, print the data frame's shape
             nodes.append(self)
@@ -108,21 +108,19 @@ class Pedar_Node(Node):
             'stance': 5,
         }
 
-    def sensor_peak(self, is_export=True, export_folder='output'):
+    def sensor_peak(self, is_export=False, export_layer: str = 'root', export_folder='output', save_suffix: str = ''):
         # compute average peak pressure through data tree recursively
         # for each level, (average) peak pressure is stored as node.sensor_peak
         analyse.attribute_average_up(self, attr_name='sensor_peak', func_attr=analyse.stance_peak)
+        export.attribute_batch_export(self, 'sensor_peak', export_layer, export_folder, save_suffix)
 
-        if is_export:
-            export.export_conditions_attribute(self, 'sensor_peak', export_folder)
-
-    def sensor_pti(self, is_export=True, export_folder='output'):
+    def sensor_pti(self, is_export=False, export_layer: str = 'root', export_folder='output', save_suffix: str = ''):
         # compute average pressure-time integral through data tree recursively
         # for each level, (average) pressure-time integral is stored as node.sensor_peak
         analyse.attribute_average_up(self, attr_name='sensor_pti', func_attr=analyse.stance_pti)
 
         if is_export:
-            export.export_conditions_attribute(self, 'sensor_pti', export_folder)
+            export.attribute_batch_export(self, 'sensor_pti', export_layer, export_folder, save_suffix)
 
     def change_loc_map(self, start_level, layers):
         # calculate the index in loc of the first layer to be changed
@@ -146,7 +144,7 @@ class Pedar_Node(Node):
 
     def restructure(self, layers: tuple = ('subject', 'condition', 'time', 'foot', 'stance')) -> Type[Pedar_Node]:
         # collect all leaf nodes
-        leaf_nodes = self.collect_leaf([])
+        leaf_nodes = self.collect_leaf(nodes=[])
 
         # create node
         '''

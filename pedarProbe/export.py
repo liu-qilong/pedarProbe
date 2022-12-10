@@ -10,15 +10,16 @@ from PIL import Image, ImageOps
 import node
 
 def attribute_batch_export(node, attr_name: str, export_layer: str, export_folder='output', save_suffix: str = ''):
+    export_level = node.loc_map[export_layer]
     row_name_list = []
     attribute_list = []
 
-    export_nodes = node.collect_leaf(export_layer)
+    export_nodes = node.collect_layer(export_layer, nodes=[])
 
-    for subject in root.branches():
-        for condition in subject.branches():
-            row_name_list.append("{} {}".format(subject.name, condition.name))
-            attribute_list.append(condition.attribute[attr_name])
+    for node in export_nodes:
+        row_name = ' '.join(node.loc[1 : export_level + 1])
+        row_name_list.append(row_name)
+        attribute_list.append(node.attribute[attr_name])
     
     # rearrange as a data frame and export
     df_condition = pd.DataFrame({"condition": row_name_list})
