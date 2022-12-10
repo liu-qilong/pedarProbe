@@ -16,6 +16,7 @@ class Node(Dict):
     while adding customised processing/analysing function for different node levels and adding attributes accordingly is crucial
     so a node class was derived from the dictionary class to enhance its ability
     """
+    # init and change
     def setup(self, name=None):
         """
         since the dictionary's __init__() is different from ordinary python class
@@ -43,26 +44,6 @@ class Node(Dict):
     def set_source(self, source_node):
         self.source = source_node
 
-    def branch_names(self):
-        return self.keys()
-
-    def branches(self):
-        return self.values()
-
-    def is_leaf(self):
-        return len(self.branch_names()) == 0
-
-    def is_level(self, layer):
-        layer_level = self.loc_map[layer]
-        return self.level == layer_level
-
-    def print(self):
-        """ recursively print the structure tree and the leaf's data frame shape. """
-        print(' ' * self.level + str(self.name))
-
-        for branch in self.branches():
-            branch.print()
-
     def clean_copy(self) -> Type[Node]:
         new_node = self.__class__()
         new_node.setup(self.name)
@@ -70,8 +51,23 @@ class Node(Dict):
         new_node.level = copy.deepcopy(self.level)
         return new_node
 
+    # judgement
+    def is_leaf(self):
+        return len(self.branch_names()) == 0
+
+    def is_layer(self, layer):
+        layer_level = self.loc_map[layer]
+        return self.level == layer_level
+
+    # access attribute
+    def branch_names(self):
+        return self.keys()
+
+    def branches(self):
+        return self.values()
+
     def collect_layer(node: Type[Node], layer: str, nodes: list) -> Iterable[Type[Node]]:
-        if node.is_level(layer):
+        if node.is_layer(layer):
             # when recursion reaches leaf level, print the data frame's shape
             nodes.append(node)
 
@@ -92,6 +88,14 @@ class Node(Dict):
         
         return nodes
 
+    # inspection
+    def print(self):
+        """ recursively print the structure tree and the leaf's data frame shape. """
+        print(' ' * self.level + str(self.name))
+
+        for branch in self.branches():
+            branch.print()
+
 
 class Pedar_Node(Node):
     def __init__(self, *args, **kwargs):
@@ -105,10 +109,28 @@ class Pedar_Node(Node):
             'foot': 4,
             'stance': 5,
         }
+    # access attribute
+    def layer_layout(self) -> tuple:
 
-    def change_loc_map(self, start_level, layers):
+        def get_max_value(d: dict):
+            value_ls = list(d.values())
+            return max(value_ls)
+
+        def get_key_with_value(d: dict, value):
+            for key, val in d.items():
+                if val == value:
+                    return key
+
+        start_index = self.level
+        end_index = get_max_value(self.loc_map)
+        
+        layer_ls = [get_key_with_value(self.loc_map, index) for index in range(start_index, end_index + 1)]
+        return tuple(layer_ls)
+
+    # manipulation
+    def change_loc_map(self, start_level, layout):
         # calculate the index in loc of the first layer to be changed
-        start_index = start_level + 1
+        start_index = start_level
 
         # delete the layers from the first layer to be changed
         del_keys = []
@@ -120,13 +142,13 @@ class Pedar_Node(Node):
             del self.loc_map[key]
 
         # change the layer indexes as instructed
-        num_layer_change = len(layers)
+        num_layer_change = len(layout)
 
         for idx in range(num_layer_change):
-            layer = layers[idx]
+            layer = layout[idx]
             self.loc_map[layer] = start_index + idx
 
-    def restructure(self, layers: tuple = ('subject', 'condition', 'time', 'foot', 'stance')) -> Type[Pedar_Node]:
+    def restructure(self, layout: tuple = ('root', 'subject', 'condition', 'time', 'foot', 'stance')) -> Type[Pedar_Node]:
         # collect all leaf nodes
         leaf_nodes = self.collect_leaf(nodes=[])
 
@@ -138,7 +160,7 @@ class Pedar_Node(Node):
         new_node.loc = copy.deepcopy(self.loc)
         new_node.level = copy.deepcopy(self.level)
         '''
-        new_node.change_loc_map(new_node.level, layers)
+        new_node.change_loc_map(new_node.level, layout)
 
         # parse each leaf node to construct the new node tree
         for leaf in leaf_nodes:
@@ -153,14 +175,14 @@ class Pedar_Node(Node):
             current_node = new_node
 
             # add layer to the node tree as instructed
-            for layer in layers[:-1]:
+            for layer in layout[1:-1]:
                 name = loc[leaf.loc_map[layer]]
                 loc[leaf.loc_map[layer]] = None  # remove the used layer name
                 
                 if name not in current_node.branch_names():
                     branch_node = Pedar_Node()
                     branch_node.setup(name)
-                    branch_node.change_loc_map(new_node.level, layers)
+                    branch_node.change_loc_map(new_node.level, layout)
                     current_node.add_branch(branch_node)
                     
                 current_node = current_node[name]
@@ -172,11 +194,12 @@ class Pedar_Node(Node):
             # construct the new leaf node and add it to the node tree
             leaf_node = Data_Node()
             leaf_node.setup(name=leaf_name, df=leaf.df, start=leaf.start, end=leaf.end)
-            leaf_node.change_loc_map(new_node.level, layers)
+            leaf_node.change_loc_map(new_node.level, layout)
             current_node.add_branch(leaf_node)
         
         return new_node
 
+    # data analysis
     def sensor_peak(self, is_export=False, export_layer: str = 'root', export_folder='output', save_suffix: str = ''):
         # compute average peak pressure through data tree recursively
         # for each level, (average) peak pressure is stored as node.sensor_peak

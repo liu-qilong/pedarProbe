@@ -40,7 +40,7 @@ class Pedar_asc(object):
         return self.doc.loc[start_time:end_time, self.id_map(foot, start_sensor_id):self.id_map(foot, end_sensor_id)]
 
 
-def drawProgressBar(percent, barLen = 20):
+def progress_bar(percent, barLen = 20):
     """ percent float from 0 to 1 """
     sys.stdout.write("\r")
     sys.stdout.write("[{:<{}}] {:.1%}".format("=" * int(barLen * percent), barLen, percent))
@@ -135,8 +135,8 @@ def trails_parse(path: Union[None, str], condition_list, max_read_rate: float = 
         
         # print progress bar and break if exceed max read rate
         read_rate = (index + 1) / length
-        drawProgressBar(read_rate)
+        progress_bar(read_rate)
         if read_rate >= max_read_rate:
-                break
+            break
 
     return root
