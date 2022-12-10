@@ -40,16 +40,15 @@ def attribute_average_up(node, attr_name='sensor_peak', func_attr=stance_peak):
 
 def print_shapes(node):
     """ recursively print the structure tree and the leaf's data frame shape. """
-    level = len(node.loc) - 1
 
     if type(node) is no.Leaf_Node:
         # when recursion reaches leaf level, print the data frame's shape
-        print(' ' * level + str(node.name) + str(node.df.shape))
+        print(' ' * node.level + str(node.name) + str(node.df.shape))
 
     else:
         # when recursion reach levels upper than leaf level
         # print its name with indents
-        print(' ' * level + str(node.name))
+        print(' ' * node.level + str(node.name))
 
         for branch in node.branches():
             print_shapes(branch)

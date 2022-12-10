@@ -26,6 +26,7 @@ class Node(Dict):
         in the context of computer science
         """
         self.name = name
+        self.level = 0
         self.loc = [name, ]
         self.attribute = {} # empty dictionary for storing analysed attributes, e.g. peak pressure
 
@@ -37,6 +38,7 @@ class Node(Dict):
         branch_node.set_source(self)
         branch_node.loc = copy.deepcopy(self.loc)
         branch_node.loc.append(branch_node.name)
+        branch_node.level = len(branch_node.loc) - 1
 
     def set_source(self, source_node):
         self.source = source_node
@@ -46,6 +48,13 @@ class Node(Dict):
 
     def branches(self):
         return self.values()
+
+    def print_shapes(self):
+        """ recursively print the structure tree and the leaf's data frame shape. """
+        print(' ' * self.level + str(self.name))
+
+        for branch in self.branches():
+            branch.print_shapes()
 
 
 class Subject_Node(Node):
