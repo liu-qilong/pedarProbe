@@ -5,7 +5,7 @@ import re
 import copy
 from typing import Dict
 
-import pedar
+import parse
 import analyse
 import export
 
@@ -49,6 +49,9 @@ class Node(Dict):
     def branches(self):
         return self.values()
 
+    def is_leaf(self):
+        return len(self.branch_names()) == 0
+
     def print_shapes(self):
         """ recursively print the structure tree and the leaf's data frame shape. """
         print(' ' * self.level + str(self.name))
@@ -57,69 +60,7 @@ class Node(Dict):
             branch.print_shapes()
 
 
-class Subject_Node(Node):
-    def setup(self, folder, *args, **kwargs):
-        Node.setup(self, *args, **kwargs)
-        self.folder = folder
-
-    def add_trail(self, asc, condition, time, foot, stances):
-        """
-        the same trail's information in the same condition and time is separated in different entries
-        each one contains one foot type with stances timestamp
-        therefore firstly construct the self.trails[condition][time] dictionary construction
-        """
-        if condition not in self.branch_names():
-            condition_node = Node()
-            condition_node.setup(name=condition)
-            self.add_branch(condition_node)
-        
-        if time not in self[condition].branch_names():
-            time_node = Node()
-            time_node.setup(name=time)
-            self[condition].add_branch(time_node)
-
-        # read asc file object
-        asc_object = pedar.Pedar_asc('{}/{}/{}.asc'.format(self.folder, self.name, asc))
-
-        # then filled foot and stances data, which complete the dictionary structure to
-        # self[condition][time][foot][stance]
-        foot_node = Node()
-        foot_node.setup(name=foot)
-        self[condition][time].add_branch(foot_node)
-
-        for idx in range(len(stances)):
-            try:
-                stance = stances[idx]
-
-                # skip empty/invalid stance
-                # since the data of some empty stances are int, transform it to str in advance
-                if not re.search('[1-9][0-9\.]*-[1-9][0-9\.]*', str(stance)):
-                    continue
-
-                start = float(re.search('^[0-9\.]+[^-]', stance).group())
-                end = float(re.search('[^-][0-9\.]+$', stance).group())
-                df = asc_object.get_time_sensor_slice(foot, start, end)
-
-                stance_node = Leaf_Node()
-                stance_node.setup(df, start, end, name=idx + 1)
-                self[condition][time][foot].add_branch(stance_node)
-
-            except:
-                print('FATAL when add trail {} {} {} {} {}'.format(self.name, condition, time, foot, stance))
-
-
-class Leaf_Node(Node):
-    def setup(self, df, start, end, *args, **kwargs):
-        Node.setup(self, *args, **kwargs)
-        self.df = df
-        self.start = start
-        self.end = end
-
-    def compute_peak():
-        pass
-
-
-class Root_Node(Node):
+class Pedar_Node(Node):
     def sensor_peak(self, is_export=True, export_folder='output'):
         # compute average peak pressure through data tree recursively
         # for each level, (average) peak pressure is stored as node.sensor_peak
@@ -138,8 +79,8 @@ class Root_Node(Node):
 
     def restructure(self, layers: tuple = ('subject', 'condition', 'time', 'foot', 'stance')) -> Type[Node]:
         # collect all leaf nodes
-        def collect_leaf(node: Type[Node], leaf_nodes: list = []) -> Iterable[Leaf_Node]:
-            if type(node) is Leaf_Node:
+        def collect_leaf(node: Type[Node], leaf_nodes: list = []) -> Iterable[Data_Node]:
+            if node.is_leaf():
                 # when recursion reaches leaf level, print the data frame's shape
                 leaf_nodes.append(node)
 
@@ -166,7 +107,7 @@ class Root_Node(Node):
             layers = layers[:-1]
 
         # create root node
-        root_node = Root_Node()
+        root_node = Pedar_Node()
         root_node.setup('subjects')
 
         # parse each leaf node to construct the new node tree
@@ -192,8 +133,16 @@ class Root_Node(Node):
             leaf_name = '-'.join(loc)
 
             # construct the new leaf node and add it to the node tree
-            leaf_node = Leaf_Node()
+            leaf_node = Data_Node()
             leaf_node.setup(name=leaf_name, df=leaf.df, start=leaf.start, end=leaf.end)
             current_node.add_branch(leaf_node)
         
         return root_node
+
+
+class Data_Node(Node):
+    def setup(self, df, start, end, *args, **kwargs):
+        Node.setup(self, *args, **kwargs)
+        self.df = df
+        self.start = start
+        self.end = end
