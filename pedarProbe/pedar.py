@@ -43,7 +43,7 @@ class Pedar_asc(object):
 
 
 class Trails_Parser(object):
-    def __init__(self, path, condition_list):
+    def __init__(self, path: Union[None, str], condition_list, max_read_rate: float = 1.0):
         self.condition_list = condition_list
         self.generate_asc_pattern()
 
@@ -51,7 +51,7 @@ class Trails_Parser(object):
         self.folder = re.search('^.*(?=/)', path).group()
         
         self.subjects = node.Node()
-        self.subjects.setup('data/subjects')
+        self.subjects.setup('subjects')
 
         length = len(self.doc.index)
         print("loading {} data entries".format(length))
@@ -79,10 +79,25 @@ class Trails_Parser(object):
                 
                 # add a trial to the subject
                 self.subjects[subject_name].add_trail(asc, condition, time, foot, stances)
-                drawProgressBar((index + 1) / length)
+                
+                # print progress bar and break if exceed max read rate
+                read_rate = (index + 1) / length
+                self.drawProgressBar(read_rate)
+                if read_rate >= max_read_rate:
+                    break
 
             except:
                 print('FATAL when parse the {}-th entry: {}'.format(index + 1, asc))
+
+    @staticmethod
+    def drawProgressBar(percent, barLen = 20):
+        """ percent float from 0 to 1 """
+        sys.stdout.write("\r")
+        sys.stdout.write("[{:<{}}] {:.1%}".format("=" * int(barLen * percent), barLen, percent))
+        sys.stdout.flush()
+        # avoiding '%' appears when progress completed
+        if percent == 1:
+            print()
 
     def generate_asc_pattern(self):
         conditions = '|'.join(self.condition_list)
@@ -106,17 +121,5 @@ class Trails_Parser(object):
         if is_export:
             export.export_conditions_attribute(self.subjects, 'sensor_pti', export_folder)
 
-
-def drawProgressBar(percent, barLen = 20):
-    """ percent float from 0 to 1 """
-    sys.stdout.write("\r")
-    sys.stdout.write("[{:<{}}] {:.1%}".format("=" * int(barLen * percent), barLen, percent))
-    sys.stdout.flush()
-    # avoiding '%' appears when progress completed
-    if percent == 1:
-        print()
-
-
-if __name__ == "__main__":
-    condition_list = ['fast walking', 'slow walking', 'normal walking']
-    data = Trails_Parser("data/subjects/walking plantar pressure time slot.xlsx", condition_list)
+    def restructure(self, layers: tuple = ('subject', 'condition', 'time', 'foot', 'stance')):
+        self.subjects = node.node_restructure(self.subjects, layers)
