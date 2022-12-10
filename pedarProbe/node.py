@@ -108,20 +108,6 @@ class Pedar_Node(Node):
             'stance': 5,
         }
 
-    def sensor_peak(self, is_export=False, export_layer: str = 'root', export_folder='output', save_suffix: str = ''):
-        # compute average peak pressure through data tree recursively
-        # for each level, (average) peak pressure is stored as node.sensor_peak
-        analyse.attribute_average_up(self, attr_name='sensor_peak', func_attr=analyse.stance_peak)
-        export.attribute_batch_export(self, 'sensor_peak', export_layer, export_folder, save_suffix)
-
-    def sensor_pti(self, is_export=False, export_layer: str = 'root', export_folder='output', save_suffix: str = ''):
-        # compute average pressure-time integral through data tree recursively
-        # for each level, (average) pressure-time integral is stored as node.sensor_peak
-        analyse.attribute_average_up(self, attr_name='sensor_pti', func_attr=analyse.stance_pti)
-
-        if is_export:
-            export.attribute_batch_export(self, 'sensor_pti', export_layer, export_folder, save_suffix)
-
     def change_loc_map(self, start_level, layers):
         # calculate the index in loc of the first layer to be changed
         start_index = start_level + 1
@@ -147,14 +133,13 @@ class Pedar_Node(Node):
         leaf_nodes = self.collect_leaf(nodes=[])
 
         # create node
-        '''
         new_node = self.clean_copy()
         '''
         new_node = Pedar_Node()
         new_node.setup(self.name)
         new_node.loc = copy.deepcopy(self.loc)
         new_node.level = copy.deepcopy(self.level)
-        
+        '''
         new_node.change_loc_map(new_node.level, layers)
 
         # parse each leaf node to construct the new node tree
@@ -193,6 +178,26 @@ class Pedar_Node(Node):
             current_node.add_branch(leaf_node)
         
         return new_node
+
+    def sensor_peak(self, is_export=False, export_layer: str = 'root', export_folder='output', save_suffix: str = ''):
+        # compute average peak pressure through data tree recursively
+        # for each level, (average) peak pressure is stored as node.sensor_peak
+        analyse.attribute_average_up(self, 'sensor_peak', analyse.stance_peak)
+        if is_export:
+            export.attribute_batch_export(self, 'sensor_peak', export_layer, export_folder, save_suffix)
+
+    def sensor_pti(self, is_export=False, export_layer: str = 'root', export_folder='output', save_suffix: str = ''):
+        # compute average pressure-time integral through data tree recursively
+        # for each level, (average) pressure-time integral is stored as node.sensor_peak
+        analyse.attribute_average_up(self, 'sensor_pti', analyse.stance_pti)
+
+        if is_export:
+            export.attribute_batch_export(self, 'sensor_pti', export_layer, export_folder, save_suffix)
+
+    def heatmap(self, attr_name: str = 'sensor_peak', mask_dir: str = 'data/left_foot_mask.png', is_export: bool = False, range: Union[str, tuple] = 'static', export_folder: str = 'output', save_suffix: str = '') -> export.FootHeatmap:
+        hm = export.FootHeatmap(self, attr_name, mask_dir)
+        hm.export_foot_heatmap(is_export, range, export_folder, save_suffix)
+        return hm
 
 
 class Data_Node(Pedar_Node):
