@@ -43,7 +43,7 @@ class Pedar_asc(object):
 
 
 class Trails_Parser(object):
-    def __init__(self, path, condition_list, max_read_rate: float = 1.0):
+    def __init__(self, path: Union[None, str], condition_list, max_read_rate: float = 1.0):
         self.condition_list = condition_list
         self.generate_asc_pattern()
 
@@ -121,7 +121,5 @@ class Trails_Parser(object):
         if is_export:
             export.export_conditions_attribute(self.subjects, 'sensor_pti', export_folder)
 
-
-if __name__ == "__main__":
-    condition_list = ['fast walking', 'slow walking', 'normal walking']
-    data = Trails_Parser("data/subjects/walking plantar pressure time slot.xlsx", condition_list)
+    def restructure(self, layers: tuple = ('subject', 'condition', 'time', 'foot', 'stance')):
+        self.subjects = node.node_restructure(self.subjects, layers)

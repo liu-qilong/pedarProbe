@@ -1,5 +1,5 @@
 from __future__ import annotations
-from typing import Type, Union
+from typing import Type, Union, Iterable
 
 import re
 import copy
@@ -27,7 +27,10 @@ class Node(Dict):
         self.loc = [name, ]
         self.attribute = {} # empty dictionary for storing analysed attributes, e.g. peak pressure
 
-    def add_branch(self, branch_node):
+    def add_branch(self, branch_node: Type[Node]) -> Type[Node]:
+        if branch_node.name in self.branch_names():
+            print("warning: node [{}] already in node {}'s branch list".format(branch_node.name, str(self.loc)))
+
         self[branch_node.name] = branch_node
         branch_node.set_source(self)
         branch_node.loc = copy.deepcopy(self.loc)
@@ -149,11 +152,12 @@ def node_restructure(node: Type[Node], layers: tuple = ('subject', 'condition', 
             name = loc[layer2index[layer]]
             loc[layer2index[layer]] = None  # remove the used layer name
             
-            branch_node = Node()
-            branch_node.setup(name)
-            
-            current_node.add_branch(branch_node)
-            current_node = branch_node
+            if name not in current_node.branch_names():
+                branch_node = Node()
+                branch_node.setup(name)
+                current_node.add_branch(branch_node)
+                
+            current_node = current_node[name]
         
         # the unused layers' names are combined as the new leaf node's name
         loc = [str(item) for item in loc if item is not None]
