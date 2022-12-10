@@ -76,24 +76,20 @@ def add_trail(node, asc, folder, condition, time, foot, stances):
     node[condition][time].add_branch(foot_node)
 
     for idx in range(len(stances)):
-        try:
-            stance = stances[idx]
+        stance = stances[idx]
 
-            # skip empty/invalid stance
-            # since the data of some empty stances are int, transform it to str in advance
-            if not re.search('[1-9][0-9\.]*-[1-9][0-9\.]*', str(stance)):
-                continue
+        # skip empty/invalid stance
+        # since the data of some empty stances are int, transform it to str in advance
+        if not re.search('[1-9][0-9\.]*-[1-9][0-9\.]*', str(stance)):
+            continue
 
-            start = float(re.search('^[0-9\.]+[^-]', stance).group())
-            end = float(re.search('[^-][0-9\.]+$', stance).group())
-            df = asc_object.get_time_sensor_slice(foot, start, end)
+        start = float(re.search('^[0-9\.]+[^-]', stance).group())
+        end = float(re.search('[^-][0-9\.]+$', stance).group())
+        df = asc_object.get_time_sensor_slice(foot, start, end)
 
-            stance_node = Data_Node()
-            stance_node.setup(df, start, end, name=idx + 1)
-            node[condition][time][foot].add_branch(stance_node)
-
-        except:
-            print('FATAL when add trail {} {} {} {} {}'.format(node.name, condition, time, foot, stance))
+        stance_node = Data_Node()
+        stance_node.setup(df, start, end, name=idx + 1)
+        node[condition][time][foot].add_branch(stance_node)
 
 
 def trails_parse(path: Union[None, str], condition_list, max_read_rate: float = 1.0):
@@ -120,30 +116,27 @@ def trails_parse(path: Union[None, str], condition_list, max_read_rate: float = 
             print('invalid asc entry name: {}'.format(asc))
             break
         
-        try:
-            condition = re.search('(?<= )[a-z ]+(?= )', asc).group()
-            time = int(re.search('[0-9]+$', asc).group())
-            foot = doc.loc[index, 'sideFoot']
-            stances = doc.loc[index, 'stance phase 1':]
+        condition = re.search('(?<= )[a-z ]+(?= )', asc).group()
+        time = int(re.search('[0-9]+$', asc).group())
+        foot = doc.loc[index, 'sideFoot']
+        stances = doc.loc[index, 'stance phase 1':]
 
-            # parse the subject's name
-            # if the subject hasn't been added to root dictionary, add it
-            subject_name = re.search('^S[0-9]+', asc).group()
+        # parse the subject's name
+        # if the subject hasn't been added to root dictionary, add it
+        subject_name = re.search('^S[0-9]+', asc).group()
 
-            if subject_name not in root.branch_names():
-                subject_node = Pedar_Node()
-                subject_node.setup(subject_name)
-                root.add_branch(subject_node)
-            
-            # add a trial to the subject
-            add_trail(root[subject_name], asc, folder, condition, time, foot, stances)
-            
-            # print progress bar and break if exceed max read rate
-            read_rate = (index + 1) / length
-            drawProgressBar(read_rate)
-            if read_rate >= max_read_rate:
-                    break
-        except:
-            print('FATAL when parse the {}-th entry: {}'.format(index + 1, asc))
+        if subject_name not in root.branch_names():
+            subject_node = Pedar_Node()
+            subject_node.setup(subject_name)
+            root.add_branch(subject_node)
+        
+        # add a trial to the subject
+        add_trail(root[subject_name], asc, folder, condition, time, foot, stances)
+        
+        # print progress bar and break if exceed max read rate
+        read_rate = (index + 1) / length
+        drawProgressBar(read_rate)
+        if read_rate >= max_read_rate:
+                break
 
     return root
