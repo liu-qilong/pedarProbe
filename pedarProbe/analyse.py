@@ -3,7 +3,8 @@ from typing import Type, Union
 
 import pandas as pd
 
-from node import Leaf_Node
+#from node import Leaf_Node
+import node as no
 
 def stance_peak(stance_node):
     """ compute the peak pressure of a stance """
@@ -20,7 +21,7 @@ def stance_pti(stance_node):
 
 def attribute_average_up(node, attr_name='sensor_peak', func_attr=stance_peak):
     """ recursively compute the attribute for each sensor among stance and average it up towards different feet, times, conditions, subjects level. """
-    if type(node) is Leaf_Node:
+    if type(node) is no.Leaf_Node:
         # when recursion reaches leaf level, compute the attribute for each sensor
         # and store it as node.attribute[attribute]
         node.attribute[attr_name] = func_attr(node)
@@ -41,7 +42,7 @@ def print_shapes(node):
     """ recursively print the structure tree and the leaf's data frame shape. """
     level = len(node.loc) - 1
 
-    if type(node) is Leaf_Node:
+    if type(node) is no.Leaf_Node:
         # when recursion reaches leaf level, print the data frame's shape
         print(' ' * level + str(node.name) + str(node.df.shape))
 

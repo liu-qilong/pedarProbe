@@ -9,11 +9,11 @@ from PIL import Image, ImageOps
 
 import node
 
-def export_conditions_attribute(subjects, attr_name, export_folder='output', save_suffix: str = ''):
+def export_conditions_attribute(root, attr_name, export_folder='output', save_suffix: str = ''):
     # retrieve all conditions' sensor peak pressure
     row_name_list = []
     attribute_list = []
-    for subject in subjects.branches():
+    for subject in root.branches():
         for condition in subject.branches():
             row_name_list.append("{} {}".format(subject.name, condition.name))
             attribute_list.append(condition.attribute[attr_name])

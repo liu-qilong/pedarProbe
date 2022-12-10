@@ -6,8 +6,6 @@ import sys
 import pandas as pd
 
 import node
-import analyse
-import export
 
 class Pedar_asc(object):
     def __init__(self, path, skiprows=9, header=9, index_col=0):
@@ -50,8 +48,8 @@ class Trails_Parser(object):
         self.doc = pd.read_excel(path)
         self.folder = re.search('^.*(?=/)', path).group()
         
-        self.subjects = node.Node()
-        self.subjects.setup('subjects')
+        self.root = node.Root_Node()
+        self.root.setup('subjects')
 
         length = len(self.doc.index)
         print("loading {} data entries".format(length))
@@ -70,15 +68,15 @@ class Trails_Parser(object):
                 stances = self.doc.loc[index, 'stance phase 1':]
 
                 # parse the subject's name
-                # if the subject hasn't been added to self.subjects dictionary, add it
+                # if the subject hasn't been added to self.root dictionary, add it
                 subject_name = re.search('^S[0-9]+', asc).group()
-                if subject_name not in self.subjects.branch_names():
+                if subject_name not in self.root.branch_names():
                     subject_node = node.Subject_Node()
                     subject_node.setup(name=subject_name, folder=self.folder)
-                    self.subjects.add_branch(subject_node)
+                    self.root.add_branch(subject_node)
                 
                 # add a trial to the subject
-                self.subjects[subject_name].add_trail(asc, condition, time, foot, stances)
+                self.root[subject_name].add_trail(asc, condition, time, foot, stances)
                 
                 # print progress bar and break if exceed max read rate
                 read_rate = (index + 1) / length
@@ -103,23 +101,5 @@ class Trails_Parser(object):
         conditions = '|'.join(self.condition_list)
         self.asc_pattern = 'S[1-9][0-9]* (' + conditions + ') [1-9][0-9]*$'
 
-    def sensor_peak(self, is_export=True, export_folder='output'):
-        # compute average peak pressure through data tree recursively
-        # for each level, (average) peak pressure is stored as node.sensor_peak
-        for subject in self.subjects.branches():
-            analyse.attribute_average_up(subject, attr_name='sensor_peak', func_attr=analyse.stance_peak)
-
-        if is_export:
-            export.export_conditions_attribute(self.subjects, 'sensor_peak', export_folder)
-
-    def sensor_pti(self, is_export=True, export_folder='output'):
-        # compute average pressure-time integral through data tree recursively
-        # for each level, (average) pressure-time integral is stored as node.sensor_peak
-        for subject in self.subjects.branches():
-            analyse.attribute_average_up(subject, attr_name='sensor_pti', func_attr=analyse.stance_pti)
-
-        if is_export:
-            export.export_conditions_attribute(self.subjects, 'sensor_pti', export_folder)
-
-    def restructure(self, layers: tuple = ('subject', 'condition', 'time', 'foot', 'stance')):
-        self.subjects = node.node_restructure(self.subjects, layers)
+    def get_data(self):
+        return self.root
