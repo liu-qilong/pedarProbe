@@ -106,6 +106,7 @@ default_layout = {
     'stance': 5,
 }
 
+
 class DynamicNode(Node):
     def __init__(self, *args, **kwargs):
         Node.__init__(self, *args, **kwargs)
