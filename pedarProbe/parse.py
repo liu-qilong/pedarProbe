@@ -88,7 +88,7 @@ def add_trail(node, asc, folder, condition, time, foot, stances):
         df = asc_object.get_time_sensor_slice(foot, start, end)
 
         stance_node = DataNode()
-        stance_node.setup(df, start, end, name=idx + 1)
+        stance_node.setup(df, start, end, name='stance ' + str(idx + 1))
         node[condition][time][foot].add_branch(stance_node)
 
 
@@ -117,7 +117,7 @@ def trails_parse(path: Union[None, str], condition_list, max_read_rate: float = 
             break
         
         condition = re.search('(?<= )[a-z ]+(?= )', asc).group()
-        time = int(re.search('[0-9]+$', asc).group())
+        time = 'trail ' + re.search('[0-9]+$', asc).group()
         foot = doc.loc[index, 'sideFoot']
         stances = doc.loc[index, 'stance phase 1':]
 

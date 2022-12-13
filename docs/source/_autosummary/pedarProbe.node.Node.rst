@@ -1,4 +1,4 @@
-pedarProbe.node.Node
+﻿pedarProbe.node.Node
 ====================
 
 .. currentmodule:: pedarProbe.node
@@ -23,12 +23,10 @@ pedarProbe.node.Node
       ~Node.branches
       ~Node.clean_copy
       ~Node.clear
-      ~Node.collect_layer
       ~Node.collect_leaf
       ~Node.copy
       ~Node.fromkeys
       ~Node.get
-      ~Node.is_layer
       ~Node.is_leaf
       ~Node.items
       ~Node.keys
