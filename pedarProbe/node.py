@@ -1,4 +1,4 @@
-"""Experimental data is usually stored in a multi-level way, which cast server difficulty to effectively aggregate them and implement analysis. In a typical pedar data folder, data separate in various files can be identified as a 5 layer structure: :code:`subject - condition - time - foot - stance`.
+"""Experimental data is usually stored in a multi-layer way, which cast server difficulty to effectively aggregate them and implement analysis. In a typical pedar data folder, data separate in various files can be identified as a 5 layer structure: :code:`subject - condition - trail - foot - stance`.
 
 To formulate a universal framework for data analysis, it's an appealing choice to build a node trees that consist of these layers to store the data.
 
@@ -6,13 +6,22 @@ To formulate a universal framework for data analysis, it's an appealing choice t
     
     Python dictionary is very convenient for creating node tree: every dictionary object is a node in the node tree, and its branch nodes are added as a value to the dictionary, with its name as the keyword, layer by layer. In this case, any node in the node tree can be called in the format: :code:`root[subject][condition][trail][foot][stance]`. However, unlike other python object, it's not convenient to add new attributes to it. Therefore a dictionary object is not capable to realise all required features of a node tree, in respect to the classical computer science's view.
 
-For this reason, :class:`Node` class is derived from the dictionary class :class:`Dict` to realised the basic node's features. And the :class:`DynamicNode` is derived from :class:`Node` to realised the layer layout restructuring feature. :class:`PedarNode` is derived from :class:`DynamicNode` conveying pedar data analysis and result aggregation through the whole node tree. And the :class:`DataNode` is derived from :class:`PedarNode` which is actually the leaf node of the node tree, storing the raw data prepared for analysis.
+For this reason, various classes are developed supporting for construction of the data analysis workflow:
+
+- :class:`Node` class is derived from the dictionary class :class:`Dict` to realised the basic node's features.
+- :class:`DynamicNode` is derived from :class:`Node` to realised the layer layout restructuring feature.
+- :class:`PedarNode` is derived from :class:`DynamicNode` conveying pedar data analysis and result aggregation through the whole node tree.
+- :class:`DataNode` is derived from :class:`PedarNode` which is actually the leaf node of the node tree, storing the raw data prepared for analysis.
+
+Tip
+---
+Such framework can be easily transferred for other data analysis task, especially the :class:`Node` and :class:`DynamicNode` which were developed in a highly generalisable way.
 """
 from __future__ import annotations
-from typing import Type, Union, Iterable
+from typing import Type, Union, Iterable, Dict
 
 import copy
-from typing import Dict
+import pandas as pd
 
 import analyse
 import export
@@ -259,8 +268,9 @@ class DynamicNode(Node):
                 'stance': 5,
             }
     """
-    def __init__(self, *args, **kwargs):
-        Node.__init__(self, *args, **kwargs)
+    def setup(self, *args, **kwargs):
+        """Compared with :meth:`~pedarProbe.node.Node.setup` of the base class :class:`Node`, initialisation of the :attr:`self.loc_map` is added."""
+        Node.setup(self, *args, **kwargs)
         self.loc_map = default_loc_map
 
     # judgement
@@ -458,12 +468,63 @@ class DynamicNode(Node):
         return new_node
 
 class PedarNode(DynamicNode):
+    """Derived from :class:`DynamicNode` to provide pedar data analysis feature.
+
+    In this project, :mod:`pedarProbe.analyse` provides functionalities for data analysis and :mod:`pedarProbe.export` provides functionalities for result export. :class:`PedarNode` conveys a bunch of short-cut functions to facilitate the usability.
+
+    Note
+    ---
+    `Class Attributes`
+
+    self.attributes :class:`dict`
+        Dictionary of the analysed attributes, for example: ::
+
+            self.attributes['sensor_peak']  # peak pressure
+            self.attributes['pti']  # pressure-time integral
+
+    Warning
+    ---
+    The specific attribute is only available after called the corresponding analysing method is called.
+
+    Attention
+    ---
+    After restructuring (:meth:`~pedarProbe.node.DynamicNode.restructure`), the :attr:`self.attributes` the nodes in the tree starting from this node will be erased. This design is due to the fact that different layer layouts usually leads to different analysis results, therefore there is no reason for keeping old analysis results.
+    """
     def setup(self, *args, **kwargs):
+        """Compared with :meth:`~pedarProbe.node.DynamicNode.setup` of the base class :class:`DynamicNode`, initialisation of the :attr:`self.attributes` is added."""
         DynamicNode.setup(self, *args, **kwargs)
-        self.attribute = {} # empty dictionary for storing analysed attributes, e.g. peak pressure
+        self.attribute = {}
 
     # data analysis
     def sensor_peak(self, is_export=False, export_layer: str = 'root', export_folder='output', save_suffix: str = ''):
+        """Analyse the peak pressure of each sensor in the leaf node level, and then average up layer by layer up to the this node. Then for each node under this node, the peak pressure analysis result can be accessed with :code:`self.attributes['sensor_peak']`.
+        
+        Parameters
+        ---
+        is_export
+            export the analysed result as a local file or not.
+        export_layer
+            if export as local file, the name of the layer to export.
+        export_folder
+            the folder of the exported file.
+        save_suffix
+            the suffix added to the default export file name :code:`sensor_peak`.
+
+            .. tip::
+
+                A specific suffix can avoid exported file be override by future export.
+
+        Example
+        ---
+        ::
+
+            n1.sensor_peak(
+                is_export=True, 
+                export_layer='condition', 
+                export_folder='output', 
+                save_suffix='_1213'  # export file name: sensor_peak_1213.xlsx
+            )
+        """
         # compute average peak pressure through data tree recursively
         # for each level, (average) peak pressure is stored as node.sensor_peak
         analyse.attribute_average_up(self, 'sensor_peak', analyse.stance_peak)
@@ -471,6 +532,34 @@ class PedarNode(DynamicNode):
             export.attribute_batch_export(self, 'sensor_peak', export_layer, export_folder, save_suffix)
 
     def sensor_pti(self, is_export=False, export_layer: str = 'root', export_folder='output', save_suffix: str = ''):
+        """Analyse the pressure-time integral (PTI) of each sensor in the leaf node level, and then average up layer by layer up to the this node. Then for each node under this node, the PTI analysis result can be accessed with :code:`self.attributes['sensor_pti']`.
+        
+        Parameters
+        ---
+        is_export
+            export the analysed result as a local file or not.
+        export_layer
+            if export as local file, the name of the layer to export.
+        export_folder
+            the folder of the exported file.
+        save_suffix
+            the suffix added to the default export file name :code:`sensor_pti`.
+
+            .. tip::
+
+                A specific suffix can avoid exported file be override by future export.
+
+        Example
+        ---
+        ::
+
+            n1.sensor_pti(
+                is_export=True, 
+                export_layer='condition', 
+                export_folder='output', 
+                save_suffix='_1213'  # export file name: sensor_pti_1213.xlsx
+            )
+        """
         # compute average pressure-time integral through data tree recursively
         # for each level, (average) pressure-time integral is stored as node.sensor_peak
         analyse.attribute_average_up(self, 'sensor_pti', analyse.stance_pti)
@@ -478,14 +567,83 @@ class PedarNode(DynamicNode):
         if is_export:
             export.attribute_batch_export(self, 'sensor_pti', export_layer, export_folder, save_suffix)
 
-    def heatmap(self, attr_name: str = 'sensor_peak', mask_dir: str = 'data/left_foot_mask.png', is_export: bool = False, range: Union[str, tuple] = 'static', export_folder: str = 'output', save_suffix: str = '') -> export.FootHeatmap:
+    def heatmap(self, attr_name: str = 'sensor_peak', mask_dir: str = 'data/left_foot_mask.png', range: Union[str, tuple] = 'static', is_export: bool = False, export_folder: str = 'output', save_suffix: str = '') -> export.FootHeatmap:
+        """Generate, plot, and export the heatmap for an attribute.
+        
+        Parameters
+        ---
+        attr_name
+            name of the attribute, same as its keyword in :attr:`self.attributes`.
+        mask_dir
+            directory of the mask file.
+            
+            .. tip::
+            
+                If Python interpretor is run at the same directory as :code:`node.py`, :attr:`mask_dir` should be :code:`data/left_foot_mask.png`, i.e. the default value.
+
+        is_export
+            export the analysed result as a local file or not.
+        export_layer
+            if export as local file, the name of the layer to export.
+        export_folder
+            the folder of the exported file.
+        save_suffix
+            the suffix added to the default export file name :code:`foot_heatmap`.
+
+            .. tip::
+
+                A specific suffix can avoid exported file be override by future export.
+
+        Return
+        ---
+        :class:`pedarProbe.export.FootHeatmap`
+            heatmap object that can be further used or manipulated.
+
+        Example
+        ---
+        ::
+
+            n1.heatmap(
+                is_export=True,  
+                export_folder='output', 
+                save_suffix='_1213'  # export file name: foot_heatmap_1213.png
+            )
+        """
         hm = export.FootHeatmap(self, attr_name, mask_dir)
-        hm.export_foot_heatmap(is_export, range, export_folder, save_suffix)
+        hm.export_foot_heatmap(range, is_export, export_folder, save_suffix)
         return hm
 
 
 class DataNode(PedarNode):
-    def setup(self, df, start, end, *args, **kwargs):
+    """Derived from :class:`PedarNode` which is actually the leaf node of the node tree, storing the raw data prepared for analysis.
+    
+    Note
+    ---
+    `Class Attributes`
+    
+    self.df :class:`pandas.core.frame.DataFrame`
+        :mod:`Pandas` data frame that stores the sensor value of within a selected stance.
+        Columns of the :attr:`self.df` is the sensor id, from 0 ~ 98 belongs to the left foot and form 99 ~ 197 belongs to the right foot. It can be accessed with: ::
+            
+            self.df.columns
+
+        Rows of the :attr:`self.df` is the time value, . It can be accessed with: ::
+            
+            self.df.index
+
+        To access a data item with specific sensor id and time: ::
+            
+            id = 188
+            time = 1.58
+            self.df[id][time]
+
+    self.start :class:`float`
+        the start time of the selected stance.
+    self.end :class:`float`
+        the end time of the selected stance.
+    """
+    def setup(self, df: pd.DataFrame, start: float, end: float, *args, **kwargs):
+        """Compared with :meth:`~pedarProbe.node.PedarNode.setup` of the base class :class:`PedarNode`, initialisations of the :attr:`self.df`, :attr:`self.start`, and :attr:`self.end` are added."""
         PedarNode.setup(self, *args, **kwargs)
         self.df = df
         self.start = start

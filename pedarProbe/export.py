@@ -75,7 +75,7 @@ class FootHeatmap(object):
                 # filling right foot area
                 self.r_pedar[self.r_index[n]] = node.attribute[attr_name][n]
 
-    def export_foot_heatmap(self, is_export: bool = True, range: Union[str, tuple] = 'static', export_folder: str = 'output', save_suffix: str = ''):
+    def export_foot_heatmap(self, range: Union[str, tuple] = 'static', is_export: bool = True, export_folder: str = 'output', save_suffix: str = ''):
         # value range
         if range == 'static':
             range_min = 0
