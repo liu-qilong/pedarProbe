@@ -6,7 +6,7 @@ To formulate a universal framework for data analysis, it's an appealing choice t
     
     Python dictionary is very convenient for creating node tree: every dictionary object is a node in the node tree, and its branch nodes are added as a value to the dictionary, with its name as the keyword, layer by layer. In this case, any node in the node tree can be called in the format: :code:`root[subject][condition][trail][foot][stance]`. However, unlike other python object, it's not convenient to add new attributes to it. Therefore a dictionary object is not capable to realise all required features of a node tree, in respect to the classical computer science's view.
 
-For this reason, :class:`Node` class is derived from the dictionary class :class:`Dict` to realised the basic node's features. And the :class:`DynamicNode` is derived from :class:`Node` to realised the layer layout restructure feature. :class:`PedarNode` is derived from :class:`DynamicNode` conveying pedar data analysis and result aggregation through the whole node tree. And the :class:`DataNode` is derived from :class:`PedarNode` which is actually the leaf node of the node tree, storing the raw data prepared for analysis.
+For this reason, :class:`Node` class is derived from the dictionary class :class:`Dict` to realised the basic node's features. And the :class:`DynamicNode` is derived from :class:`Node` to realised the layer layout restructuring feature. :class:`PedarNode` is derived from :class:`DynamicNode` conveying pedar data analysis and result aggregation through the whole node tree. And the :class:`DataNode` is derived from :class:`PedarNode` which is actually the leaf node of the node tree, storing the raw data prepared for analysis.
 """
 from __future__ import annotations
 from typing import Type, Union, Iterable
@@ -32,6 +32,21 @@ class Node(Dict):
         from right to left, stores the names of the node, its source node, its source node's source node, and so on, up to the root node level. 
         
         For example, :code:`self.loc = ['root', 'S4', 'fast walking', 'trail 1', 'L', 'stance 2']`. It represents the location of the node in the node tree.
+
+    Example
+    ---
+    ::
+
+            import pedarProbe as pp
+            n1 = pp.node.Node()
+            n1.setup('S4')
+
+            n2 = pp.node.Node()
+            n2.setup('fast walking')
+
+            n1.add_branch(n2)
+            n1.print()  # print the node tree starting from n1
+            n1['fast walking'].print()  # print the node tree starting from n2
     """
     # init and change
     def setup(self, name: str = ''):
@@ -176,13 +191,13 @@ class Node(Dict):
 
         Warning
         ---
-        A :class:`list` must be passed to :code:`nodes`. Otherwise the class may use :code:`nodes` created in the last call of :meth:`collect_leaf` as the initial value, which may cause incorrect result.
+        A :class:`list` must be passed to :attr:`nodes`. Otherwise the class may use :attr:`nodes` created in the last call of :meth:`collect_leaf` as the initial value, which may cause incorrect result.
 
         Example
         ---
         ::
 
-            leafs = n1.collect_leaf([])
+            leafs = n1.collect_leaf(nodes=[])
         """
         if self.is_leaf():
             # when recursion reaches leaf level, print the data frame's shape
@@ -197,6 +212,12 @@ class Node(Dict):
     # inspection
     def print(self):
         """Recursively print the structure of the node tree starting from this node.
+
+        Example
+        ---
+        ::
+
+            n1.print()
         """
         print(' ' * self.level + str(self.name))
 
@@ -204,7 +225,8 @@ class Node(Dict):
             branch.print()
 
 
-default_layout = {
+# default loc map
+default_loc_map = {
     'root': 0,
     'subject': 1, 
     'condition': 2,
@@ -215,9 +237,31 @@ default_layout = {
 
 
 class DynamicNode(Node):
+    """Derived from :class:`Node` to realised the layer layout restructuring feature (:meth:`restructure`).
+
+    Note
+    ---
+    `Class Attributes`
+
+    self.loc_map
+        A dictionary that stores the layer names and its corresponding :attr:`level`, which is also its index in :attr:`self.loc`.
+        
+        With the :attr:`self.loc`, the :class:`Node` stores the information of its upper nodes in the node tree. However, to implement layer layout restructuring, it's necessary to be aware of the structure of its lower nodes' layout.
+
+        Pursuing this goal, in :class:`DynamicNode` every layer of the whole node tree (from the root node) is designated with a name and the corresponding :attr:`level` value is stored in :attr:`self.loc_map`. Therefore, the :class:`DynamicNode` is aware of the structure of the whole node tree. The default value of :attr:`self.loc_map`: ::
+
+            self.loc_map = {
+                'root': 0,
+                'subject': 1, 
+                'condition': 2,
+                'trail': 3,
+                'foot': 4,
+                'stance': 5,
+            }
+    """
     def __init__(self, *args, **kwargs):
         Node.__init__(self, *args, **kwargs)
-        self.loc_map = default_layout
+        self.loc_map = default_loc_map
 
     # judgement
     def is_layer(self, layer: str) -> bool:
@@ -226,7 +270,7 @@ class DynamicNode(Node):
         Parameters
         ---
         layer
-            name of the layer
+            name of the layer.
         
         Return
         ---
@@ -238,6 +282,19 @@ class DynamicNode(Node):
 
     # access attribute
     def layer_layout(self) -> tuple:
+        """Get the layer layout representation of the node tree starting from this node.
+        
+        Return
+        ---
+        :class:`tuple`
+            From left to right stores the names of layers of this node, the branch nodes, the branch nodes' branch nodes, and so on, down to the leaf node level.
+            
+            For example, in the default layout, call :meth:`layer_layout` of the :code:`trail` layer node will return: :code:`('trail', 'foot', 'stance')`.
+
+        Attention
+        ---
+        The layer layout representation is also used for indicating the way to restructure the node tree in :meth:`restructure`.
+        """
 
         def get_max_value(d: dict):
             value_ls = list(d.values())
@@ -254,19 +311,60 @@ class DynamicNode(Node):
         layer_ls = [get_key_with_value(self.loc_map, index) for index in range(start_index, end_index + 1)]
         return tuple(layer_ls)
 
-    def collect_layer(node: Type[Node], layer: str, nodes: list) -> Iterable[Type[Node]]:
-        if node.is_layer(layer):
+    def collect_layer(self, layer: str, nodes: list) -> Iterable[Type[DynamicNode]]:
+        """In the node tree starting from this node, recursively collect all nodes of a specific layer.
+
+        Parameters
+        ---
+        layer
+            name of the layer.
+        nodes
+            A list that will stores the collected nodes. If it's not empty, newly collected nodes will be append to it without erasing the existing items.
+        
+        Return
+        ---
+        :class:`list`
+            A list of the collected nodes.
+
+        Warning
+        ---
+        A :class:`list` must be passed to :attr:`nodes`. Otherwise the class may use :attr:`nodes` created in the last call of :meth:`collect_leaf` as the initial value, which may cause incorrect result.
+
+        Example
+        ---
+        ::
+
+            nodes = n1.collect_layer(layer='stance', nodes=[])
+        """
+        if self.is_layer(layer):
             # when recursion reaches leaf level, print the data frame's shape
-            nodes.append(node)
+            nodes.append(self)
 
         else:
-            for branch in node.branches():
+            for branch in self.branches():
                 nodes = branch.collect_layer(layer, nodes)
         
         return nodes
 
     # manipulation
-    def change_loc_map(self, start_level, layout):
+    def change_loc_map(self, start_level: int, layout: str):
+        """Change :attr:`loc_map` with a restructured layer layout representation.
+
+        Parameters
+        ---
+        start_level
+            the start level of restructuring.
+        layout
+            the restructured layer layout representation.
+            
+            .. tip::
+
+                For more information see :meth:`layer_layout`.
+
+        Attention
+        ---
+        This method is automatically called in :meth:`restructure`.
+        """
         # calculate the index in loc of the first layer to be changed
         start_index = start_level
 
@@ -286,7 +384,35 @@ class DynamicNode(Node):
             layer = layout[idx]
             self.loc_map[layer] = start_index + idx
 
-    def restructure(self, layout: tuple = ('root', 'subject', 'condition', 'trail', 'foot', 'stance')) -> Type[PedarNode]:
+    def restructure(self, layout: tuple = ('root', 'subject', 'condition', 'trail', 'foot', 'stance')) -> Type[DynamicNode]:
+        """Return the restructured the node tree from this node.
+
+        Attention
+        ---
+        The restructured the node tree is return, while the original node tree remains unchanged. This design is based on the fact that, in restructuring, some layers may be compress (aka flatten). In this case, the restructuring is irreversible, therefore it's better to keep the original node tree as a backup.
+        
+        Parameters
+        ---
+        layout
+            the restructured layer layout representation.
+            
+            .. tip::
+
+                For more information see :meth:`layer_layout`.
+
+        Example
+        ---
+        To implement the node tree restructuring, it's better to check the layer layout of the node to be restructured: ::
+
+            print(n1.layer_layout)
+
+        For example, :code:`('root', 'subject', 'condition', 'trail', 'foot', 'stance')`. Assume that we'd like to make :code:`'condition'` layer directly under :code:'root' layer, compress all other layer as one layer, and named the compressed layer as :code:`'compress'`: ::
+
+            n2 = n1.restructure(layout=('root', 'condition', 'compress'))
+
+        Now we have the restructured :attr:`n2` and the original :attr:`n1` remains unchanged.
+
+        """
         # collect all leaf nodes
         leaf_nodes = self.collect_leaf(nodes=[])
 
