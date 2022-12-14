@@ -1,10 +1,4 @@
-# pedarProbe
-
-Data analysis framework for pedar plantar pressure sensor.
-
-![heatmap](https://github.com/TOB-KNPOB/pedarProbe/blob/main/docs/source/figures/heatmap.png)
-
-_Fig. An example averaged foot peak pressure distribution heatmap._
+# Development Notes
 
 ## Documentation
 
@@ -12,12 +6,12 @@ The documentation web pages can be found in `docs/build/html/`. Please open `ind
 
 Other than the documentation, `examples/` folder provides some example analysis code for quick-start.
 
-### Note
-
+```{note}
 The documentation is generated with [Sphinx](https://www.sphinx-doc.org/en/master/index.html). If you are not familiar with it, I would recommend two tutorials for quick-start:
 
 - [A “How to” Guide for Sphinx + ReadTheDocs - sglvladi](https://sphinx-rtd-tutorial.readthedocs.io/en/latest/) provides an easy-to-follow learning curve but omitted some details.
 - [Getting Started - Sphinx](https://www.sphinx-doc.org/en/master/usage/quickstart.html) is harder to understand, but provides some essential information to understand the background, which is vital even for very basic configuration.
+```
 
 ## Project Code
 
@@ -25,16 +19,16 @@ The project code is stored in `pedarProbe/` folder. Under it is a `data/` folder
 
 Except for these folders, you must have noticed that there are also some `.py` files, including `parse.py`, `node.py`, `analyse.py`, `export.py`. These are **core modules** for this package:
 
-- `pedarProbe.parse`
+- {mod}`pedarProbe.parse`
     Loading and parsing pedar plantar pressure data and construct a data node tree for further analysis.
-- `pedarProbe.node`
+- {mod}`pedarProbe.node`
     Provide well-defined node type for construct the data node tree.
-- `pedarProbe.analyse`
-    Provide data analysis functionalities. Short-cut functions are realised in `pedarProbe.node.PedarNode` to facilitate the usability.
-- `pedarProbe.export`
-    Provide analysis result export functionalities. Short-cut functions are realised in `pedarProbe.node.PedarNode` to facilitate the usability.
+- {mod}`pedarProbe.analyse`
+    Provide data analysis functionalities. Short-cut functions are realised in {class}`pedarProbe.node.PedarNode` to facilitate the usability.
+- {mod}`pedarProbe.export`
+    Provide analysis result export functionalities. Short-cut functions are realised in {class}`pedarProbe.node.PedarNode` to facilitate the usability.
 
-Other than these, there is an `task/` folder haven't been discussed. It's the `pedarProbe.task` sub-package storing all fine-tuned, twisted analysis features derived from the core modules.
+Other than these, there is an `task/` folder haven't been discussed. It's the {mod}`pedarProbe.task` sub-package storing all fine-tuned, twisted analysis features derived from the core modules.
 
 ## Version Control
 

@@ -6,10 +6,20 @@
 Welcome to pedarProbe's documentation!
 ======================================
 
+Data analysis framework for pedar plantar pressure sensor.
+
+.. tip::
+   Before jump into the :doc:`api`, please read the :doc:`dev notes` to get an overall understanding of the technical settings and program structure.
+
+.. figure:: figures/heatmap.png
+   
+   An example averaged foot peak pressure distribution heatmap.
+
 .. toctree::
    :maxdepth: 100
    :caption: Contents:
 
+   dev notes
    api
 
 Indices and tables
