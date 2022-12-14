@@ -3,7 +3,6 @@
 To formulate a universal framework for data analysis, it's an appealing choice to build a node trees that consist of these layers to store the data.
 
 .. note::
-    
     Python dictionary is very convenient for creating node tree: every dictionary object is a node in the node tree, and its branch nodes are added as a value to the dictionary, with its name as the keyword, layer by layer. In this case, any node in the node tree can be called in the format: :code:`root[subject][condition][trail][foot][stance]`. However, unlike other python object, it's not convenient to add new attributes to it. Therefore a dictionary object is not capable to realise all required features of a node tree, in respect to the classical computer science's view.
 
 For this reason, various classes are developed supporting for construction of the data analysis workflow:
@@ -368,7 +367,6 @@ class DynamicNode(Node):
             the restructured layer layout representation.
             
             .. tip::
-
                 For more information see :meth:`layer_layout`.
 
         Attention
@@ -407,7 +405,6 @@ class DynamicNode(Node):
             the restructured layer layout representation.
             
             .. tip::
-
                 For more information see :meth:`layer_layout`.
 
         Example
@@ -484,11 +481,11 @@ class PedarNode(DynamicNode):
 
     Warning
     ---
-    The specific attribute is only available after called the corresponding analysing method is called.
+    The specific attribute is only available after calling the corresponding analysis method.
 
     Attention
     ---
-    After restructuring (:meth:`~pedarProbe.node.DynamicNode.restructure`), the :attr:`self.attributes` the nodes in the tree starting from this node will be erased. This design is due to the fact that different layer layouts usually leads to different analysis results, therefore there is no reason for keeping old analysis results.
+    In the returned node tree of restructuring (:meth:`~pedarProbe.node.DynamicNode.restructure`), all nodes' :attr:`self.attributes` will be erased. This design is based on the fact that different layer layouts usually leads to different analysis results, therefore there is no reason for keeping old analysis results.
     """
     def setup(self, *args, **kwargs):
         """Compared with :meth:`~pedarProbe.node.DynamicNode.setup` of the base class :class:`DynamicNode`, initialisation of the :attr:`self.attributes` is added."""
@@ -511,7 +508,6 @@ class PedarNode(DynamicNode):
             the suffix added to the default export file name :code:`sensor_peak`.
 
             .. tip::
-
                 A specific suffix can avoid exported file be override by future export.
 
         Example
@@ -546,7 +542,6 @@ class PedarNode(DynamicNode):
             the suffix added to the default export file name :code:`sensor_pti`.
 
             .. tip::
-
                 A specific suffix can avoid exported file be override by future export.
 
         Example
@@ -578,7 +573,6 @@ class PedarNode(DynamicNode):
             directory of the mask file.
             
             .. tip::
-            
                 If Python interpretor is run at the same directory as :code:`node.py`, :attr:`mask_dir` should be :code:`data/left_foot_mask.png`, i.e. the default value.
 
         is_export
@@ -591,7 +585,6 @@ class PedarNode(DynamicNode):
             the suffix added to the default export file name :code:`foot_heatmap`.
 
             .. tip::
-
                 A specific suffix can avoid exported file be override by future export.
 
         Return
@@ -623,7 +616,7 @@ class DataNode(PedarNode):
     
     self.df :class:`pandas.core.frame.DataFrame`
         :mod:`Pandas` data frame that stores the sensor value of within a selected stance.
-        Columns of the :attr:`self.df` is the sensor id, from 0 ~ 98 belongs to the left foot and form 99 ~ 197 belongs to the right foot. It can be accessed with: ::
+        Columns of the :attr:`self.df` is the sensor ID, from 0 ~ 98 belongs to the left foot and form 99 ~ 197 belongs to the right foot. It can be accessed with: ::
             
             self.df.columns
 

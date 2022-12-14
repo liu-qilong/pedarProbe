@@ -1,4 +1,4 @@
-﻿pedarProbe.node.Node
+pedarProbe.node.Node
 ====================
 
 .. currentmodule:: pedarProbe.node
