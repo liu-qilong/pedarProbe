@@ -43,7 +43,7 @@ def sensor_pti(node: pedarnode.DataNode) -> pd.core.series.Series:
 
 
 def attribute_average_up(node: Type[pedarnode.PedarNode], attr_name: str = 'sensor_peak', attr_func: function = sensor_peak):
-    """Recursively compute the attribute for each leaf node and then average it up as the upper node's attribute layer by layer, towards root node level. The added attribute will be added to :class:`~pedarProbe.node.PedarNode`'s :attr:`self.attributes` dictionary.
+    """Recursively compute the attribute for each leaf node and then average it up as the upper node's attribute layer by layer, towards root node level. The added attribute will be added to :class:`~pedarProbe.node.PedarNode`'s :attr:`attributes` dictionary.
 
     Parameters
     ---

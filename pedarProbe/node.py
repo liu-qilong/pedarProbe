@@ -575,6 +575,9 @@ class PedarNode(DynamicNode):
             .. tip::
                 If Python interpretor is run at the same directory as :code:`node.py`, :attr:`mask_dir` should be :code:`data/left_foot_mask.png`, i.e. the default value.
 
+            .. attention::
+                During python runtime, the foot sensor mask is loaded in the first instantiating of :class:`FootHeatmap` and then other :class:`FootHeatmap` all shares the same loaded mask. Therefore, :attr:`mask_dir` is only needed to be passed in for the first instantiating of :class:`FootHeatmap`.
+
         is_export
             export the analysed result as a local file or not.
         export_layer

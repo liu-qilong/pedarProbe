@@ -45,7 +45,7 @@ class Pedar_asc(object):
     self.path :class:`str`
         path of the :code:`.asc` file exported from pedar.
     self.doc :class:`pandas.core.frame.DataFrame`
-        loaded data frame, with sensor IDs as the columns (0~98 for left foot and 99 ~ 198 for the right foot) and time values as the rows.
+        loaded data frame, with sensor IDs as the columns (0~98 for left foot and 99 ~ 197 for the right foot) and time values as the rows.
 
         .. tip::
             There are two sensor ID numbering conventions. Please refer to :meth:`id_map` for more information.
@@ -63,7 +63,7 @@ class Pedar_asc(object):
         """Maps sensor ID numbering from pedar convention to :mod:`pedarProbe` convention:
 
         - pedar convention: for each foot, sensors are numbered as 1~99.
-        - :mod:`pedarProbe` convention: 0~98 for left foot sensors and 99 ~ 198 for the right foot sensors.
+        - :mod:`pedarProbe` convention: 0~98 for left foot sensors and 99 ~ 197 for the right foot sensors.
         
         Parameters
         ---
