@@ -1,6 +1,6 @@
-pedarProbe.analyse.stance\_peak
+pedarProbe.analyse.sensor\_peak
 ===============================
 
 .. currentmodule:: pedarProbe.analyse
 
-.. autofunction:: stance_peak
+.. autofunction:: sensor_peak

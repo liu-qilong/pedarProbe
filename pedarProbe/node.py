@@ -523,7 +523,7 @@ class PedarNode(DynamicNode):
         """
         # compute average peak pressure through data tree recursively
         # for each level, (average) peak pressure is stored as node.sensor_peak
-        analyse.attribute_average_up(self, 'sensor_peak', analyse.stance_peak)
+        analyse.attribute_average_up(self, 'sensor_peak', analyse.sensor_peak)
         if is_export:
             export.attribute_batch_export(self, 'sensor_peak', export_layer, export_folder, save_suffix)
 
@@ -557,7 +557,7 @@ class PedarNode(DynamicNode):
         """
         # compute average pressure-time integral through data tree recursively
         # for each level, (average) pressure-time integral is stored as node.sensor_peak
-        analyse.attribute_average_up(self, 'sensor_pti', analyse.stance_pti)
+        analyse.attribute_average_up(self, 'sensor_pti', analyse.sensor_pti)
 
         if is_export:
             export.attribute_batch_export(self, 'sensor_pti', export_layer, export_folder, save_suffix)

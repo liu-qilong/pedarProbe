@@ -1,6 +1,6 @@
-pedarProbe.analyse.stance\_pti
+pedarProbe.analyse.sensor\_pti
 ==============================
 
 .. currentmodule:: pedarProbe.analyse
 
-.. autofunction:: stance_pti
+.. autofunction:: sensor_pti

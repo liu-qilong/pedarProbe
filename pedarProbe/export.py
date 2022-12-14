@@ -1,3 +1,5 @@
+"""Analysis result export functionalities. Short-cut functions are realised in :class:`pedarProbe.node.PedarNode` to facilitate the usability.
+"""
 from __future__ import annotations
 from typing import Type, Union
 
