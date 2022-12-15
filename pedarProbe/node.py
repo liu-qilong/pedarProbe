@@ -149,10 +149,19 @@ class Node(Dict):
         In the derived classes of :class:`Node`, the returned type are the derived classes, rather than the basic class :class:`Node`.
         """
         new_node = self.__class__()
-        new_node.setup(self.name)
+        new_node.setup(copy.deepcopy(self.name))
         new_node.loc = copy.deepcopy(self.loc)
         new_node.level = copy.deepcopy(self.level)
         return new_node
+        
+        """
+        new_node = copy.deepcopy(self)
+        new_node.clear()
+        new_node.attributes = {}
+        """
+
+        return new_node
+        
 
     # judgement
     def is_leaf(self) -> bool:
@@ -270,7 +279,7 @@ class DynamicNode(Node):
     def setup(self, *args, **kwargs):
         """Compared with :meth:`~pedarProbe.node.Node.setup` of the base class :class:`Node`, initialisation of the :attr:`self.loc_map` is added."""
         Node.setup(self, *args, **kwargs)
-        self.loc_map = default_loc_map
+        self.loc_map = copy.deepcopy(default_loc_map)
 
     # judgement
     def is_layer(self, layer: str) -> bool:
@@ -304,7 +313,6 @@ class DynamicNode(Node):
         ---
         The layer layout representation is also used for indicating the way to restructure the node tree in :meth:`restructure`.
         """
-
         def get_max_value(d: dict):
             value_ls = list(d.values())
             return max(value_ls)
@@ -438,7 +446,7 @@ class DynamicNode(Node):
                 loc[id] = None
 
             current_node = new_node
-
+            
             # add layer to the node tree as instructed
             for layer in layout[1:-1]:
                 name = loc[leaf.loc_map[layer]]
@@ -449,9 +457,9 @@ class DynamicNode(Node):
                     branch_node.setup(name)
                     branch_node.change_loc_map(new_node.level, layout)
                     current_node.add_branch(branch_node)
-                    
+                
                 current_node = current_node[name]
-
+            
             # the unused layers' names are combined as the new leaf node's name
             loc = [str(item) for item in loc if item is not None]
             leaf_name = ' - '.join(loc)
