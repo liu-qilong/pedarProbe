@@ -6,7 +6,7 @@
 Welcome to pedarProbe's documentation!
 ======================================
 
-Data analysis framework for pedar plantar pressure sensor.
+Data analysis framework for pedar plantar pressure sensor. (`GitHub repository link <https://github.com/TOB-KNPOB/pedarProbe>`_)
 
 .. tip::
    Before jump into the :doc:`api`, please read the :doc:`data` and :doc:`dev notes` to get an overall understanding of the technical settings and program structure.
@@ -17,7 +17,7 @@ Data analysis framework for pedar plantar pressure sensor.
 
 .. toctree::
    :maxdepth: 100
-   :caption: Contents:
+   :caption: Table of Contents:
 
    data
    dev notes
