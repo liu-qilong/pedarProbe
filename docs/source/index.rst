@@ -9,7 +9,7 @@ Welcome to pedarProbe's documentation!
 Data analysis framework for pedar plantar pressure sensor.
 
 .. tip::
-   Before jump into the :doc:`api`, please read the :doc:`dev notes` to get an overall understanding of the technical settings and program structure.
+   Before jump into the :doc:`api`, please read the :doc:`data` and :doc:`dev notes` to get an overall understanding of the technical settings and program structure.
 
 .. figure:: figures/heatmap.png
    
@@ -19,6 +19,7 @@ Data analysis framework for pedar plantar pressure sensor.
    :maxdepth: 100
    :caption: Contents:
 
+   data
    dev notes
    api
 

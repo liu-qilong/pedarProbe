@@ -8,12 +8,11 @@ Example
 
     condition_list = ['fast walking', 'slow walking', 'normal walking']
     data = parse.trails_parse(
-        "data/subjects/walking plantar pressure time slot.xlsx",  # the guiding file's path
+        "data/subjects/walking plantar pressure time slot.xlsx",  # the guiding sheet's path
         condition_list,  # condition list will be used for format checking
         # max_read_rate=0.1,
     )
 """
-
 from __future__ import annotations
 from typing import Type, Union
 
@@ -186,7 +185,7 @@ def progress_bar(percent: float, bar_len: int = 20):
 
 
 def add_trail(node: PedarNode, asc: str, folder: str, condition: str, trail: str, foot: str, stances: list):
-    """Construct node tree starting from a subject node according to information of an entry in the guiding file.
+    """Construct node tree starting from a subject node according to information of an entry in the guiding sheet.
 
     Parameters
     ---
@@ -246,17 +245,17 @@ def add_trail(node: PedarNode, asc: str, folder: str, condition: str, trail: str
 
 
 def trails_parse(path: Union[None, str], condition_list: list, max_read_rate: float = 1.0):
-    """Load and parse pedar plantar pressure data and return the constructed node tree according to the guiding file.
+    """Load and parse pedar plantar pressure data and return the constructed node tree according to the guiding sheet.
     
     Parameters
     ---
     path
-        the path of the guiding file.
+        the path of the guiding sheet.
     condition_list
         a list of condition names.
 
         .. warning::
-            It will be used for format checking for the entries in the guiding file.
+            It will be used for format checking for the entries in the guiding sheet.
 
     max_read_rate
         :attr:`max_read_rate` is the percentage from 0 ~ 1. Only load :attr:`max_read_rate` of entries.
@@ -268,7 +267,7 @@ def trails_parse(path: Union[None, str], condition_list: list, max_read_rate: fl
 
                 condition_list = ['fast walking', 'slow walking', 'normal walking']
                 data = parse.trails_parse(
-                    "data/subjects/walking plantar pressure time slot.xlsx",  # the guiding file's path
+                    "data/subjects/walking plantar pressure time slot.xlsx",  # the guiding sheet's path
                     condition_list,  # condition list will be used for format checking
                     max_read_rate=0.1,
     """
