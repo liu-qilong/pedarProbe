@@ -570,22 +570,13 @@ class PedarNode(DynamicNode):
         if is_export:
             export.attribute_batch_export(self, 'sensor_pti', export_layer, export_folder, save_suffix)
 
-    def heatmap(self, attr_name: str = 'sensor_peak', mask_dir: str = 'data/left_foot_mask.png', range: Union[str, tuple] = 'static', is_export: bool = False, export_folder: str = 'output', save_suffix: str = '') -> export.FootHeatmap:
+    def heatmap(self, attr_name: str = 'sensor_peak', range: Union[str, tuple] = 'static', is_export: bool = False, export_folder: str = 'output', save_suffix: str = '') -> export.FootHeatmap:
         """Generate, plot, and export the heatmap for an attribute.
         
         Parameters
         ---
         attr_name
             name of the attribute, same as its keyword in :attr:`self.attributes`.
-        mask_dir
-            directory of the mask file.
-            
-            .. tip::
-                If Python interpretor is run at the same directory as :code:`node.py`, :attr:`mask_dir` should be :code:`data/left_foot_mask.png`, i.e. the default value.
-
-            .. attention::
-                During python runtime, the foot sensor mask is loaded in the first instantiating of :class:`FootHeatmap` and then other :class:`FootHeatmap` all shares the same loaded mask. Therefore, :attr:`mask_dir` is only needed to be passed in for the first instantiating of :class:`FootHeatmap`.
-
         is_export
             export the analysed result as a local file or not.
         export_layer
@@ -613,7 +604,7 @@ class PedarNode(DynamicNode):
                 save_suffix='_1213'  # export file name: foot_heatmap_1213.png
             )
         """
-        hm = export.FootHeatmap(self, attr_name, mask_dir)
+        hm = export.FootHeatmap(self, attr_name)
         hm.export_foot_heatmap(range, is_export, export_folder, save_suffix)
         return hm
 
