@@ -5,7 +5,7 @@ from typing import Type, Union
 
 import pandas as pd
 
-import node as pedarnode
+from pedarProbe import node as pedarnode
 
 def sensor_peak(node: pedarnode.DataNode) -> pd.core.series.Series:
     """Compute the peak pressure of each sensor.

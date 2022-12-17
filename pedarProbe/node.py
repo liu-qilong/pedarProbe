@@ -22,8 +22,8 @@ from typing import Type, Union, Iterable, Dict
 import copy
 import pandas as pd
 
-import analyse
-import export
+from pedarProbe import analyse
+from pedarProbe import export
 
 class Node(Dict):
     """:class:`Node` class is derived from the dictionary class :class:`Dict` to realised the basic node's features.

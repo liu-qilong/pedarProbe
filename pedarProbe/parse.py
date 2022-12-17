@@ -21,7 +21,7 @@ import sys
 import numpy as np
 import pandas as pd
 
-from node import PedarNode, DataNode
+from pedarProbe.node import PedarNode, DataNode
 
 class Pedar_asc(object):
     """Reader for :code:`.asc` file exported from pedar.

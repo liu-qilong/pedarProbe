@@ -9,7 +9,7 @@ import pandas as pd
 import matplotlib.pyplot as plt
 from PIL import Image, ImageOps
 
-import node
+from pedarProbe import node
 
 def attribute_batch_export(node, attr_name: str, export_layer: str, export_folder='output', save_suffix: str = ''):
     """Batch export the analysis result of a specific layer in the node tree as a :code:`.xlsx` file.
