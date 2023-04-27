@@ -1,5 +1,7 @@
 # pedarProbe
 
+[![Documentation Status](https://readthedocs.org/projects/pedarprobe/badge/?version=latest)](https://pedarprobe.readthedocs.io/en/latest/?badge=latest)
+
 Data analysis framework for pedar plantar pressure sensor.
 
 ![heatmap](https://github.com/TOB-KNPOB/pedarProbe/blob/main/docs/source/figures/heatmap.png)
