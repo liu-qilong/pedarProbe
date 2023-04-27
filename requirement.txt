@@ -1,4 +1,16 @@
+# python packages
 numpy
 pandas
 matplotlib
 Pillow
+
+# jupyter notebook
+ipykernel
+nbconvert
+trame
+ipywidgets
+
+# sphinx packages
+sphinx_copybutton
+myst_parser
+furo
