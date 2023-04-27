@@ -34,12 +34,12 @@ extensions = [
 	'sphinx.ext.doctest',
 	'sphinx.ext.autodoc',
 	'sphinx.ext.autosummary',
-	"sphinx.ext.inheritance_diagram",
-	'sphinxcontrib.napoleon',
-	"sphinx.ext.viewcode",
-	"sphinx_copybutton",
-	'myst_parser',
+	'sphinx.ext.inheritance_diagram',
+	'sphinx.ext.napoleon',
+	'sphinx.ext.viewcode',
 	'sphinx.ext.autosectionlabel',
+	'sphinx_copybutton',
+	'myst_parser',
 ]
 
 source_suffix = {
